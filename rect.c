@@ -176,4 +176,44 @@ List *Rect_split(Rect *subject_rect, Rect *cutting_rect)
     return output_rects;
 }
 
+Rect *Rect_intersect(Rect *rect_a, Rect *rect_b)
+{
+    Rect *result_rect;
+
+    if(!(rect_a->left <= rect_b->right && 
+       rect_a->right >= rect_b->left &&
+       rect_a->top <= rect_b->bottom && 
+       rect_a->bottom >= rect_b->top))
+    {
+        return (Rect *)0;
+    }
+
+    if(!(result_rect = Rect_new(rect_a->top, rect_a->left, rect_a->bottom, rect_a->right)))
+    {
+        return (Rect *)0;
+    }
+
+    if(rect_b->left >= result_rect->left && rect_b->left <=result_rect->right)
+    {
+        result_rect->left = rect_b->left;
+    }
+
+    if(rect_b->top >= result_rect->top && rect_b->top <= result_rect->bottom)
+    {
+        result_rect->top = rect_b->top;
+    }
+
+    if(rect_b->right >= result_rect->left && rect_b->right <= result_rect->right)
+    {
+        result_rect->right = rect_b->right;
+    }
+
+    if(rect_b->bottom >= result_rect->top && rect_b->bottom <= result_rect->bottom)
+    {
+        result_rect->bottom = rect_b->bottom;
+    }
+
+    return result_rect;
+}
+
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

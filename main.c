@@ -52,6 +52,7 @@
 
 #include "context.h"
 #include "desktop.h"
+#include "window.h"
 
 Desktop *desktop;
 
@@ -68,7 +69,7 @@ int main(int argc, char **argv)
     uint32_t screen_width = 1024;
     uint32_t screen_height = 768;
    
-    SDL_Window *window = NULL;
+    SDL_Window *sdl_window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture  = NULL;
     uint32_t *framebuffer = NULL;
@@ -77,7 +78,7 @@ int main(int argc, char **argv)
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    window = SDL_CreateWindow(
+    sdl_window = SDL_CreateWindow(
         "SDL2 Pixel Drawing", 
         SDL_WINDOWPOS_UNDEFINED, 
         SDL_WINDOWPOS_UNDEFINED, 
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
         0);
 
     renderer = SDL_CreateRenderer(
-        window,
+        sdl_window,
         -1, 
         SDL_RENDERER_ACCELERATED);
 
@@ -110,12 +111,12 @@ int main(int argc, char **argv)
 
     desktop = Desktop_new(context);
     
-    Desktop_create_window(desktop, 10, 10, 300, 200);
-    Desktop_create_window(desktop, 100, 150, 400, 400);
-    Desktop_create_window(desktop, 200, 100, 200, 600);
+    Window_create_window((Window *)desktop, 10, 10, 300, 200, 0);
+    Window *window = Window_create_window((Window *)desktop, 100, 150, 400, 400, 0);
+    Window_create_window((Window *)desktop, 200, 100, 200, 600, 0);
 
-    Desktop_paint(desktop);
-   
+    Window_paint((Window *)desktop);
+
     while(!quit)
     {
         SDL_UpdateTexture(texture, NULL, framebuffer, screen_width*sizeof(uint32_t));
@@ -171,7 +172,7 @@ int main(int argc, char **argv)
 
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(sdl_window);
     SDL_Quit();
 
     return 0;

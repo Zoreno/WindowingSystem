@@ -60,6 +60,7 @@ typedef struct Rect_struct
 
 Rect *Rect_new(int top, int left, int bottom, int right);
 List *Rect_split(Rect *subject_rect, Rect *cutting_rect);
+Rect *Rect_intersect(Rect *rect_a, Rect *rect_b);
 
 #endif // _RECT_H_
 

@@ -10,7 +10,6 @@ LDFLAGS := -g -lSDL2
 all: main list listnode context desktop rect window
 	gcc *.o $(LDFLAGS) -o sdltest
 
-
 main: main.c
 	gcc -c $(CFLAGS) main.c
 

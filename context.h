@@ -59,12 +59,17 @@ typedef struct Context_struct
     uint16_t width;
     uint16_t height;
 
+    int translate_x;
+    int translate_y;
+
     List *clip_rects;
     
 } Context;
 
-Context *Context_new(uint16_t width, uint16_t height, uint32_t *buffer);
-
+Context *Context_new(
+    uint16_t width, 
+    uint16_t height, 
+    uint32_t *buffer);
 
 void Context_clipped_rect(
     Context *context,
@@ -104,6 +109,10 @@ void Context_draw_rect(
     unsigned int width,
     unsigned int height,
     uint32_t color);
+
+void Context_intersect_clip_rect(
+    Context *context, 
+    Rect *rect);
 
 void Context_subtract_clip_rect(
     Context *context, 

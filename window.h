@@ -54,15 +54,41 @@
 #define WIN_TITLECOLOR 0xFFBE9270
 #define WIN_BORDERCOLOR 0xFF000000
 
+#define WIN_TITLEHEIGHT 31
+#define WIN_BORDERWIDTH 3
+
+#define WIN_NODECORATION 0x1
+
+struct Window_struct;
+
+typedef void (*WindowPaintHandler)(struct Window_struct *);
+typedef void (*WindowMousedownHandler)(struct Window_struct *, int, int);
+
 typedef struct Window_struct
 {
-    uint16_t x;
-    uint16_t y;
+    struct Window_struct *parent;
+
+    int16_t x;
+    int16_t y;
 
     uint16_t width;
     uint16_t height;
 
+    uint16_t flags;
+
     Context *context;
+
+    List *children;
+
+    uint8_t last_button_state;
+
+    WindowPaintHandler paint_function;
+    struct Window_struct *drag_child;
+
+    int16_t drag_off_x;
+    int16_t drag_off_y;
+
+    WindowMousedownHandler mousedown_function;
 } Window;
 
 Window *Window_new(
@@ -70,9 +96,43 @@ Window *Window_new(
     unsigned int y, 
     unsigned int width, 
     unsigned int height,
+    uint16_t flags,
     Context *context);
 
-void Window_paint(Window *window);
+int Window_init(
+    Window *window, 
+    int16_t x, 
+    int16_t y, 
+    uint16_t width, 
+    uint16_t height,
+    uint16_t flags, 
+    Context *context);
+
+void Window_paint(
+    Window *window);
+
+void Window_process_mouse(
+    Window *window, 
+    uint16_t mouse_x, 
+    uint16_t mouse_y, 
+    uint8_t mouse_buttons);
+
+List *Window_get_windows_above(
+    Window *parent, 
+    Window *child);
+
+Window *Window_create_window(
+    Window *window, 
+    int16_t x, 
+    int16_t y, 
+    uint16_t width, 
+    uint16_t height, 
+    uint16_t flags);
+
+void Window_insert_child(
+    Window *window, 
+    Window *child);
+
 
 #endif // _WINDOW_H_
 

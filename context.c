@@ -82,6 +82,12 @@ void Context_clipped_rect(
     int max_x = x + width;
     int max_y = y + height;
 
+    x += context->translate_x;
+    y += context->translate_y;
+
+    max_x += context->translate_x;
+    max_y += context->translate_y;
+
     if(x < clip_area->left)
         x = clip_area->left;
 
@@ -175,6 +181,41 @@ void Context_draw_rect(
     Context_vertical_line(context, x, y + 1, height - 2, color);
     Context_horizontal_line(context, x, y + height - 1, width, color);
     Context_vertical_line(context, x + width - 1, y + 1, height - 2, color);
+}
+
+void Context_intersect_clip_rect(Context *context, Rect *rect)
+{
+    int i;
+    List *output_rects;
+    Rect *current_rect;
+    Rect *intersect_rect;
+
+    if(!(output_rects = List_new()))
+    {
+        return;
+    }
+
+    for(i = 0; i < context->clip_rects->count; ++i)
+    {
+        current_rect = (Rect *)List_get_at(context->clip_rects, i);
+        intersect_rect = Rect_intersect(current_rect, rect);
+
+        if(intersect_rect)
+        {
+            List_add(output_rects, intersect_rect);
+        }
+    }
+
+    while(context->clip_rects->count)
+    {
+        List_remove_at(context->clip_rects, 0);
+    }
+
+    free(context->clip_rects);
+
+    context->clip_rects = output_rects;
+
+    free(rect);
 }
 
 void Context_subtract_clip_rect(
