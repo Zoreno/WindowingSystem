@@ -7,7 +7,7 @@
 CFLAGS := -g -Wall -Wextra -Wpedantic
 LDFLAGS := -g -lSDL2
 
-all: main list listnode context desktop rect window
+all: main list listnode context desktop rect window button
 	gcc *.o $(LDFLAGS) -o sdltest
 
 main: main.c
@@ -30,6 +30,9 @@ rect: rect.c rect.h
 
 window: window.c window.h
 	gcc -c $(CFLAGS) window.c
+
+button: button.c button.h
+	gcc -c $(CFLAGS) button.c
 
 run: all
 	./sdltest

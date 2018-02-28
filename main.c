@@ -53,6 +53,7 @@
 #include "context.h"
 #include "desktop.h"
 #include "window.h"
+#include "button.h"
 
 Desktop *desktop;
 
@@ -114,6 +115,9 @@ int main(int argc, char **argv)
     Window_create_window((Window *)desktop, 10, 10, 300, 200, 0);
     Window *window = Window_create_window((Window *)desktop, 100, 150, 400, 400, 0);
     Window_create_window((Window *)desktop, 200, 100, 200, 600, 0);
+
+    Button *button = Button_new(307, 357, 80, 30);
+    Window_insert_child(window, (Window *)button);
 
     Window_paint((Window *)desktop);
 
