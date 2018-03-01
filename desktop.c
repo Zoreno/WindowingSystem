@@ -52,6 +52,31 @@
 #include <time.h>
 #include "context.h"
 
+#define cX 0xFF000000
+#define cO 0xFFFFFFFF
+#define c_ 0x00000000
+
+unsigned int mouse_img[MOUSE_BUFSZ] = {  
+    cX, c_, c_, c_, c_, c_, c_, c_, c_, c_, c_,
+    cX, cX, c_, c_, c_, c_, c_, c_, c_, c_, c_,
+    cX, cO, cX, c_, c_, c_, c_, c_, c_, c_, c_,
+    cX, cO, cO, cX, c_, c_, c_, c_, c_, c_, c_,
+    cX, cO, cO, cO, cX, c_, c_ ,c_, c_, c_, c_,
+    cX, cO, cO, cO, cO, cX, c_, c_, c_, c_, c_,
+    cX, cO, cO, cO, cO, cO, cX, c_, c_, c_, c_,
+    cX, cO, cO, cO, cO, cO, cO, cX, c_, c_, c_,
+    cX, cO, cO, cO, cO, cO, cO, cO, cX, c_, c_,
+    cX, cO, cO, cO, cO, cO, cO, cO, cO, cX, c_,
+    cX, cO, cO, cO, cO, cO, cO, cO, cO, cO, cX,
+    cX, cO, cO, cX, cO, cO, cO, cX, cX, cX, cX,
+    cX, cO, cX, c_, cX, cO, cO, cX, c_, c_, c_,
+    cX, cX, c_, c_, cX, cO, cO, cX, c_, c_, c_,
+    cX, c_, c_, c_, c_, cX, cO, cO, cX, c_, c_,
+    c_, c_, c_, c_, c_, cX, cO, cO, cX, c_, c_,
+    c_, c_, c_, c_, c_, c_, cX, cO, cX, c_, c_,
+    c_, c_, c_, c_, c_, c_, c_, cX, cX, c_, c_ 
+};
+
 Desktop *Desktop_new(Context *context)
 {
     Desktop *desktop;
@@ -94,10 +119,14 @@ void Desktop_process_mouse(
     struct timespec start_time;
     struct timespec end_time;
 
-    desktop->mouse_x = mouse_x;
-    desktop->mouse_y = mouse_y;
+    int i;
+    int x;
+    int y;
 
-    Window_process_mouse((Window *)desktop, mouse_x, mouse_y, mouse_buttons);
+    Window *child;
+    List *dirty_list;
+    Rect *mouse_rect;
+
 
     /*
      * Start time measurement
@@ -106,12 +135,59 @@ void Desktop_process_mouse(
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start_time);
 
     /*
-     * Do the painting 
+     * Do the mouse handling/painting
      */
+    Window_process_mouse((Window *)desktop, mouse_x, mouse_y, mouse_buttons);
 
+    if(!(dirty_list = List_new()))
+    {
+        return;
+    }
 
+    if(!(mouse_rect = Rect_new(desktop->mouse_y, desktop->mouse_x,
+                               desktop->mouse_y + MOUSE_HEIGHT - 1,
+                               desktop->mouse_x + MOUSE_WIDTH - 1)))
+    {
+        free(dirty_list);
+        return;
+    }
+
+    List_add(dirty_list, mouse_rect);
+
+    Window_paint((Window *)desktop, dirty_list, 1);
+
+    List_remove_at(dirty_list, 0);
+    free(dirty_list);
+    free(mouse_rect);
+
+    desktop->mouse_x = mouse_x;
+    desktop->mouse_y = mouse_y;
+
+    for(y = 0; y < MOUSE_HEIGHT; ++y)
+    {
+        if((y + mouse_y) >= desktop->window.context->height)
+        {
+            break;
+        }
+
+        for(x = 0; x < MOUSE_WIDTH; ++x)
+        {
+            if((x + mouse_x) >= desktop->window.context->width)
+            {
+                break;
+            }
+
+            if(mouse_img[y * MOUSE_WIDTH + x] & 0xFF000000)
+            {
+                desktop->window.context->buffer[
+                    (y + mouse_y) * desktop->window.context->width + (x + mouse_x)] = 
+                    mouse_img[y*MOUSE_WIDTH + x];
+            }
+        }
+    }
+    
     /*
-     * Get the time after painting
+     * Get the time after updating
      */
     clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end_time);
 
@@ -119,14 +195,6 @@ void Desktop_process_mouse(
         (end_time.tv_nsec - start_time.tv_nsec);
 
     printf("Painting Desktop took %dns\n", (int)nanoDiff);
-
-    Context_fill_rect(
-        desktop->window.context, 
-        desktop->mouse_x, 
-        desktop->mouse_y, 
-        10, 
-        10, 
-        0xFF000000);
 }
 
 void Desktop_paint_handler(Window *desktop_window)
@@ -138,6 +206,13 @@ void Desktop_paint_handler(Window *desktop_window)
         desktop_window->context->width,
         desktop_window->context->height, 
         0xFFFF9933);
+
+    Context_draw_text(
+        desktop_window->context, 
+        "Hello World!", 
+        40, 
+        desktop_window->height - 40, 
+        0xFFFFFFFF);
 }
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

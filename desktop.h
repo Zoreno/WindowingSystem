@@ -51,6 +51,10 @@
 #include "context.h"
 #include "window.h"
 
+#define MOUSE_WIDTH 11
+#define MOUSE_HEIGHT 18
+#define MOUSE_BUFSZ (MOUSE_WIDTH * MOUSE_HEIGHT)
+
 typedef struct Desktop_struct
 {
     Window window;

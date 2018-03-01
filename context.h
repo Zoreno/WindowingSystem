@@ -127,6 +127,13 @@ void Context_add_clip_rect(
 void Context_clear_clip_rects(
     Context *context);
 
+void Context_draw_text(
+    Context *context, 
+    char *string, 
+    int x, 
+    int y, 
+    uint32_t color);
+
 #endif // _CONTEXT_H_
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

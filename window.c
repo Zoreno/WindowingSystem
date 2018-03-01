@@ -142,6 +142,11 @@ void Window_update_title(Window *window)
     int screen_x;
     int screen_y;
 
+    if(!window->context)
+    {
+        return;
+    }
+
     if(window->flags & WIN_NODECORATION)
     {
         return;
@@ -198,6 +203,9 @@ void Window_apply_bound_clipping(Window *window, int in_recursion, List *dirty_r
     int i;
     List *clip_windows;
     Window *clipping_window;
+
+    if(!window->context)
+        return;
 
     screen_x = Window_screen_x(window);
     screen_y = Window_screen_y(window);
@@ -286,6 +294,9 @@ void Window_paint(Window *window, List *dirty_regions, uint8_t paint_children)
 
     Window *current_child;
     Rect *temp_rect;
+
+    if(!window->context)
+        return;
 
     Window_apply_bound_clipping(window, 0, dirty_regions);
 
@@ -518,12 +529,25 @@ void Window_mousedown_handler(Window *window, int x, int y)
     return;
 }
 
+void Window_update_context(Window *window, Context *context)
+{
+    int i;
+
+    window->context = context;
+
+    for(i = 0; i < window->children->count; ++i)
+    {
+        Window_update_context((Window *)List_get_at(window->children, i), context);
+    }
+}
+
 void Window_insert_child(Window *window, Window *child)
 {
     child->parent = window;
-    child->context = window->context;
     List_add(window->children, child);
     child->parent->active_child = child;
+
+    Window_update_context(child, window->context);
 }
 
 Window *Window_create_window(Window *window, int16_t x, int16_t y,

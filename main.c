@@ -44,6 +44,41 @@
 
 /* Code: */
 
+/*
+  
+TODO List:
+
+Primary goals:
+
+Text rendering
+Window title
+Remove windows.
+
+Render bitmaps
+
+Mouse Up/Down events
+Mouse Scroll events
+Keyboard events
+
+Simple controls
+ - Button
+ - Checkbox
+ - Label
+ - Textbox
+
+Simple Applications
+ - Calculator
+ - Command line parser
+
+Secondary goals:
+
+Theme
+Start bar
+
+
+
+ */
+
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -98,6 +133,8 @@ int main(int argc, char **argv)
         SDL_TEXTUREACCESS_STATIC, 
         screen_width, 
         screen_height);
+
+    SDL_ShowCursor(SDL_DISABLE);
    
     // TODO: Better allocator than malloc
     framebuffer = malloc(sizeof(uint32_t) * screen_width * screen_height);

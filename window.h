@@ -53,6 +53,8 @@
 #define WIN_BGCOLOR 0xFFBBBBBB
 #define WIN_TITLECOLOR 0xFFBE9270
 #define WIN_TITLECOLOR_INACTIVE 0xFF908080
+#define WIN_TEXTCOLOR 0xFFFFE0E0
+#define WIN_TEXTCOLOR_INACTIVE 0xFFFFBBBB
 #define WIN_BORDERCOLOR 0xFF000000
 
 #define WIN_TITLEHEIGHT 31
@@ -92,6 +94,8 @@ typedef struct Window_struct
     int16_t drag_off_y;
 
     WindowMousedownHandler mousedown_function;
+
+    char *title;
 } Window;
 
 Window *Window_new(
