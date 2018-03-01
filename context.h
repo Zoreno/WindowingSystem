@@ -64,6 +64,8 @@ typedef struct Context_struct
 
     List *clip_rects;
     
+    uint8_t clipping_on;
+    
 } Context;
 
 Context *Context_new(

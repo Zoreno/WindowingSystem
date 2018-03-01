@@ -98,5 +98,8 @@ void Button_mousedown_handler(Window *button_window, int x, int y)
     Button *button = (Button *)button_window;
 
     button->color_toggle = !button->color_toggle;
+
+    Window_invalidate((Window *)button, 0, 0,
+                      button->window.height - 1, button->window.width - 1);
 }
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

@@ -90,12 +90,35 @@ void Desktop_process_mouse(
     uint16_t mouse_y, 
     uint8_t mouse_buttons)
 {
+    
+    struct timespec start_time;
+    struct timespec end_time;
+
     desktop->mouse_x = mouse_x;
     desktop->mouse_y = mouse_y;
 
     Window_process_mouse((Window *)desktop, mouse_x, mouse_y, mouse_buttons);
 
-    Window_paint((Window *)desktop);
+    /*
+     * Start time measurement
+     */
+
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start_time);
+
+    /*
+     * Do the painting 
+     */
+
+
+    /*
+     * Get the time after painting
+     */
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end_time);
+
+    long nanoDiff = (end_time.tv_sec - start_time.tv_sec) * (long)1e9 + 
+        (end_time.tv_nsec - start_time.tv_nsec);
+
+    printf("Painting Desktop took %dns\n", (int)nanoDiff);
 
     Context_fill_rect(
         desktop->window.context, 
@@ -104,24 +127,6 @@ void Desktop_process_mouse(
         10, 
         10, 
         0xFF000000);
-}
-
-void Desktop_paint(Desktop *desktop)
-{
-    /*
-     * Desktop painting timing
-     */
-
-    struct timespec start_time;
-    struct timespec end_time;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start_time);
-
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &end_time);
-
-    long nanoDiff = (end_time.tv_sec - start_time.tv_sec) * (long)1e9 + 
-        (end_time.tv_nsec - start_time.tv_nsec);
-
-    printf("Painting Desktop took %dns\n", (int)nanoDiff);
 }
 
 void Desktop_paint_handler(Window *desktop_window)

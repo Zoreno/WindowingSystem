@@ -119,7 +119,10 @@ int main(int argc, char **argv)
     Button *button = Button_new(307, 357, 80, 30);
     Window_insert_child(window, (Window *)button);
 
-    Window_paint((Window *)desktop);
+    Button *button2 = Button_new(307, 257, 80, 30);
+    Window_insert_child(window, (Window *)button2);
+
+    Window_paint((Window *)desktop, (List *)0, 1);
 
     while(!quit)
     {

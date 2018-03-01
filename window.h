@@ -52,6 +52,7 @@
 
 #define WIN_BGCOLOR 0xFFBBBBBB
 #define WIN_TITLECOLOR 0xFFBE9270
+#define WIN_TITLECOLOR_INACTIVE 0xFF908080
 #define WIN_BORDERCOLOR 0xFF000000
 
 #define WIN_TITLEHEIGHT 31
@@ -83,7 +84,9 @@ typedef struct Window_struct
     uint8_t last_button_state;
 
     WindowPaintHandler paint_function;
+
     struct Window_struct *drag_child;
+    struct Window_struct *active_child;
 
     int16_t drag_off_x;
     int16_t drag_off_y;
@@ -109,7 +112,9 @@ int Window_init(
     Context *context);
 
 void Window_paint(
-    Window *window);
+    Window *window,
+    List *dirty_regions,
+    uint8_t paint_children);
 
 void Window_process_mouse(
     Window *window, 
@@ -119,6 +124,10 @@ void Window_process_mouse(
 
 List *Window_get_windows_above(
     Window *parent, 
+    Window *child);
+
+List *Window_get_windows_below(
+    Window *parent,
     Window *child);
 
 Window *Window_create_window(
@@ -133,6 +142,21 @@ void Window_insert_child(
     Window *window, 
     Window *child);
 
+void Window_raise(
+    Window *window, 
+    uint8_t do_draw);
+
+void Window_move(
+    Window *window, 
+    int new_x, 
+    int new_y);
+
+void Window_invalidate(
+    Window *window, 
+    int top, 
+    int left, 
+    int bottom, 
+    int right);
 
 #endif // _WINDOW_H_
 
