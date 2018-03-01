@@ -113,6 +113,7 @@ int Window_init(
     window->drag_off_x = 0;
     window->drag_off_y = 0;
     window->mousedown_function = Window_mousedown_handler;
+    window->title = (char *)0;
 
     return 1;
 }
@@ -191,6 +192,13 @@ void Window_draw_border(Window *window)
         window->width - 6, 
         25, 
         window->parent->active_child == window ? WIN_TITLECOLOR : WIN_TITLECOLOR_INACTIVE);
+
+    Context_draw_text(
+        window->context,
+        window->title,
+        screen_x + 10,
+        screen_y + 10,
+        window->parent->active_child == window ? WIN_TEXTCOLOR : WIN_TEXTCOLOR_INACTIVE);
 }
 
 void Window_apply_bound_clipping(Window *window, int in_recursion, List *dirty_regions)
@@ -713,6 +721,39 @@ void Window_invalidate(Window *window, int top, int left, int bottom, int right)
     List_remove_at(dirty_regions, 0);
     free(dirty_regions);
     free(dirty_rect);
+}
+
+void Window_set_title(Window *window, char *new_title)
+{
+    int len;
+    int i;
+
+    // A realloc might be useful here...
+    // libc has a realloc but libk might not.
+    if(window->title)
+    {
+        free(window->title);
+    }
+
+    len = strlen(new_title);
+
+    if(!(window->title = (char *)malloc((len + 1) * sizeof(char))))
+    {
+        return;
+    }
+
+    strncpy(window->title, new_title, len);
+    
+    window->title[len] = '\0';
+
+    if(window->flags & WIN_NODECORATION)
+    {
+        Window_invalidate(window, 0, 0, window->height - 1, window->width - 1);
+    }
+    else
+    {
+        Window_update_title(window);
+    }
 }
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

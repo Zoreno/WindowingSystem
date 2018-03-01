@@ -376,6 +376,12 @@ void Context_draw_char(Context *context, char c, int x, int y, uint32_t color)
 
 void Context_draw_text(Context *context, char *string, int x, int y, uint32_t color)
 {
+
+    if(!string)
+    {
+        return;
+    }
+
     for(; *string; x += 8)
     {
         Context_draw_char(context, *(string++), x, y, color);

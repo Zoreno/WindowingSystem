@@ -162,6 +162,10 @@ void Window_invalidate(
     int bottom, 
     int right);
 
+void Window_set_title(
+    Window *window, 
+    char *new_title);
+
 #endif // _WINDOW_H_
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

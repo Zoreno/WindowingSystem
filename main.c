@@ -155,9 +155,13 @@ int main(int argc, char **argv)
 
     Button *button = Button_new(307, 357, 80, 30);
     Window_insert_child(window, (Window *)button);
+    Window_set_title((Window *)button, "Button1");
 
     Button *button2 = Button_new(307, 257, 80, 30);
     Window_insert_child(window, (Window *)button2);
+    Window_set_title((Window *)button2, "Button2");
+
+    Window_set_title(window, "Button Window");
 
     Window_paint((Window *)desktop, (List *)0, 1);
 

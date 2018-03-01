@@ -73,6 +73,7 @@ void Button_paint(Window *button_window)
     Button *button = (Button *)button_window;
 
     uint32_t border_color;
+    int title_len;
 
     if(button->color_toggle)
     {
@@ -91,6 +92,21 @@ void Button_paint(Window *button_window)
                       button_window->height - 6, border_color);
     Context_draw_rect(button_window->context, 4, 4, button_window->width - 8,
                       button_window->height - 8, border_color);
+
+    if(!button_window->title)
+    {
+        return;
+    }
+
+    title_len = strlen(button_window->title) * 8;
+    
+
+    Context_draw_text(
+        button_window->context,
+        button_window->title,
+        (button_window->width / 2) - (title_len / 2),
+        (button_window->height / 2) - 6,
+        WIN_BORDERCOLOR);
 }
 
 void Button_mousedown_handler(Window *button_window, int x, int y)
