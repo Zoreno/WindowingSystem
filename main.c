@@ -179,9 +179,9 @@ int main(int argc, char **argv)
 
     desktop = Desktop_new(context);
     
-    Window_create_window((Window *)desktop, 10, 10, 300, 200, 0);
-    Window *window = Window_create_window((Window *)desktop, 100, 150, 400, 400, WIN_MINIMIZED);
-    Window_create_window((Window *)desktop, 200, 100, 200, 600, 0);
+    Desktop_create_window((Window *)desktop, 10, 10, 300, 200, 0);
+    Window *window = Desktop_create_window((Window *)desktop, 100, 150, 400, 400, 0);
+    Desktop_create_window((Window *)desktop, 200, 100, 200, 600, 0);
 
     Button *button = Button_new(307, 357, 80, 30);
     Window_insert_child(window, (Window *)button);
@@ -215,6 +215,12 @@ int main(int argc, char **argv)
                         break;
                     case SDLK_r:
                         Window_restore(window);
+                        break;
+                    case SDLK_n:
+                        Desktop_create_window((Window *)desktop, 10, 10, 300, 200, 0);
+                        break;
+                    case SDLK_k:
+                        Desktop_remove_window((Window *)desktop, window);
                         break;
                 }
                 

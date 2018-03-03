@@ -307,6 +307,7 @@ void Window_paint(
 {
     int i;
     int j;
+    uint32_t current_index;
     int screen_x;
     int screen_y;
     int child_screen_x;
@@ -314,6 +315,7 @@ void Window_paint(
 
     Window *current_child;
     Rect *temp_rect;
+    List *draw_windows;
 
     if(!window->context)
         return;
@@ -380,15 +382,37 @@ void Window_paint(
         return;
     }
 
-    for(i = 0; i < window->children->count; ++i)
+    if(!(draw_windows = List_new()))
     {
-        current_child = (Window *)List_get_at(window->children, i);
+        return;
+    }
 
+    
+    // Construct a new list with all windows in drawing order
+    for(current_index = 0; current_index < window->children->count; ++current_index)
+    {
+        for(i = 0; i < window->children->count; ++i)
+        {
+            current_child = (Window *)List_get_at(window->children, i);
+
+            if(current_child->index == current_index)
+            {
+                List_add(draw_windows, current_child);
+                continue;
+            }    
+        }
+    }
+    
+    // Draw all windows in the drawing list
+    for(i = 0; i < draw_windows->count; ++i)
+    {
+        current_child = (Window *)List_get_at(draw_windows, i);
+        
         if(dirty_regions)
         {
             for(j = 0; j < dirty_regions->count; ++j)
             {
-
+                
                 temp_rect = (Rect *)List_get_at(dirty_regions, j);
                 
                 screen_x = Window_screen_x(current_child);
@@ -402,15 +426,22 @@ void Window_paint(
                     break;
                 }
             }
-
+            
             if(j == dirty_regions->count)
             {
                 continue;
             }
         }
-
+        
         Window_paint(current_child, dirty_regions, 1);
+    }   
+
+    while(draw_windows->count)
+    {
+        List_remove_at(draw_windows, 0);
     }
+
+    free(draw_windows);
 }
 
 void Window_paint_handler(Window *window)
@@ -424,7 +455,7 @@ void Window_paint_handler(Window *window)
         WIN_BGCOLOR);
 }
 
-List *Window_get_windows_above(Window *parent, Window *window)
+List *Window_get_windows_above(Window *parent, Window *child)
 {
     int i;
     Window *current_window;
@@ -435,11 +466,11 @@ List *Window_get_windows_above(Window *parent, Window *window)
 
     for(i = 0; i < parent->children->count; ++i)
     {
-        if(window == (Window *)List_get_at(parent->children, i))
+        if(child == (Window *)List_get_at(parent->children, i))
             break;
     }
 
-    for(; i < parent->children->count; ++i)
+    for(i = 0; i < parent->children->count; ++i)
     {
         current_window = (Window *)List_get_at(parent->children, i);
         
@@ -448,10 +479,15 @@ List *Window_get_windows_above(Window *parent, Window *window)
             continue;
         }
 
-        if(current_window->x <= (window->x + window->width - 1) &&
-           (current_window->x + current_window->width - 1) >= window->x &&
-           current_window->y <= (window->y + window->height - 1) &&
-           (window->y + window->height - 1) >= window->y)
+        if(current_window->index >= child->index)
+        {
+            continue;
+        }
+
+        if(current_window->x <= (child->x + child->width - 1) &&
+           (current_window->x + current_window->width - 1) >= child->x &&
+           current_window->y <= (child->y + child->height - 1) &&
+           (current_window->y + current_window->height - 1) >= child->y)
         {
             List_add(return_list, current_window);
         }
@@ -471,7 +507,7 @@ List *Window_get_windows_below(Window *parent, Window *child)
         return return_list;
     }
 
-    for(i = parent->children->count - 1; i > -1; --i)
+    for(i = 0; i < parent->children->count; ++i)
     {
         if(child == (Window *)List_get_at(parent->children, i))
         {
@@ -479,11 +515,16 @@ List *Window_get_windows_below(Window *parent, Window *child)
         }
     }
 
-    for(; i > -1; --i)
+    for(i = 0; i < parent->children->count; ++i)
     {
         current_window = List_get_at(parent->children, i);
 
         if(current_window->flags & WIN_MINIMIZED)
+        {
+            continue;
+        }
+
+        if(current_window->index <= child->index)
         {
             continue;
         }
@@ -507,16 +548,40 @@ void Window_process_mouse(
     uint8_t mouse_buttons)
 {
     int i;
+    uint32_t current_index;
     int inner_x1;
     int inner_y1;
     int inner_x2;
     int inner_y2;
     
+    Window *current_child;
     Window *child;
-    
-    for(i = window->children->count - 1; i >= 0; --i)
+
+    List *processing_windows;
+
+    if(!(processing_windows = List_new()))
     {
-        child = (Window *)List_get_at(window->children, i);
+        return;
+    }
+
+    // Construct a new list with all windows in drawing order
+    for(current_index = 0; current_index < window->children->count; ++current_index)
+    {
+        for(i = 0; i < window->children->count; ++i)
+        {
+            current_child = (Window *)List_get_at(window->children, i);
+
+            if(current_child->index == current_index)
+            {
+                List_add(processing_windows, current_child);
+                continue;
+            }    
+        }
+    }
+    
+    for(i = 0; i < processing_windows->count; ++i)
+    {
+        child = (Window *)List_get_at(processing_windows, i);
 
         if(child->flags & WIN_MINIMIZED)
         {
@@ -567,6 +632,13 @@ void Window_process_mouse(
     }
 
     window->last_button_state = mouse_buttons;
+
+    while(processing_windows->count)
+    {
+        List_remove_at(processing_windows, 0);
+    }
+
+    free(processing_windows);
 }
 
 void Window_mousedown_handler(Window *window, int x, int y)
@@ -614,7 +686,8 @@ Window *Window_create_window(Window *window, int16_t x, int16_t y,
     }
 
     new_window->parent = window;
-    new_window->parent->active_child = new_window;
+
+    Window_raise(new_window, 1);
 
     return new_window;
 }
@@ -632,23 +705,26 @@ void Window_raise(Window *window, uint8_t do_draw)
 
     parent = window->parent;
 
-    if(parent->active_child == window)
+    if(parent->active_child && parent->active_child == window)
     {
         return;
     }
 
     last_active = parent->active_child;
 
+    uint32_t window_index = window->index;
+
     for(i = 0; i < parent->children->count; ++i)
     {
-        if((Window *)List_get_at(parent->children, i) == window)
+        Window *wind = (Window *)List_get_at(parent->children, i);
+
+        if(wind->index < window_index)
         {
-            break;
+            ++wind->index;
         }
     }
 
-    List_remove_at(parent->children, i);
-    List_add(parent->children, (void *) window);
+    window->index = 0;
 
     parent->active_child = window;
 
@@ -659,7 +735,10 @@ void Window_raise(Window *window, uint8_t do_draw)
 
     Window_paint(window, (List *)0, 1);
 
-    Window_update_title(last_active);
+    if(last_active)
+    {
+        Window_update_title(last_active);
+    }
 
     Desktop_invalidate_start_bar(parent);
 
@@ -864,6 +943,49 @@ void Window_restore(Window *window)
         window->x + window->width - 1);
 
     Window_raise(window, 1);
+}
+
+void Window_remove(Window *window)
+{
+    Window *parent;
+    Window *child;
+    int i;
+    int window_index;
+
+    parent = window->parent;
+
+    for(i = 0; i < parent->children->count; ++i)
+    {
+        child = (Window *)List_get_at(parent->children, i);
+
+        if(child == window)
+        {
+            window_index = i;
+
+            break;
+        }
+    }
+
+    while(window->children->count)
+    {
+        child = (Window *)List_remove_at(window->children, 0);
+
+        Window_remove(child);
+    }
+
+    List_remove_at(parent->children, window_index);
+
+    Window_invalidate(
+        parent, 
+        window->y, 
+        window->x,
+        window->y + 
+        window->height - 1,
+        window->x + window->width - 1);
+
+    free(window->title);
+
+    free(window);
 }
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

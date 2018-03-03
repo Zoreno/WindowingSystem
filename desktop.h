@@ -76,6 +76,18 @@ void Desktop_paint_handler(
 void Desktop_invalidate_start_bar(
     Window *desktop_window);
 
+Window *Desktop_create_window(
+    Window *desktop_window, 
+    int16_t x, 
+    int16_t y, 
+    uint16_t width, 
+    uint16_t height, 
+    uint16_t flags);
+
+void Desktop_remove_window(
+    Window *desktop_window, 
+    Window *window);
+
 #endif // _DESKTOP_H_
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

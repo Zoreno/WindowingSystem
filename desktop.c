@@ -266,4 +266,53 @@ void Desktop_paint_handler(Window *desktop_window)
     Desktop_draw_start_bar(desktop_window);  
 }
 
+Window *Desktop_create_window(
+    Window *desktop_window, 
+    int16_t x, 
+    int16_t y, 
+    uint16_t width, 
+    uint16_t height, 
+    uint16_t flags)
+{
+    Window *new_window = Window_create_window(desktop_window, x, y, width, height, flags);
+
+    if(!new_window)
+    {
+        return new_window;
+    }
+
+    Desktop_invalidate_start_bar(desktop_window);
+
+    Window_paint(desktop_window, (List *)0, 1);
+
+    return new_window;
+}
+
+void Desktop_remove_window(
+    Window *desktop_window, 
+    Window *window)
+{
+
+    int window_index = window->index;
+    int i;
+
+    Window *child;
+
+    for(i = 0; i < desktop_window->children->count; ++i)
+    {
+        child = (Window *)List_get_at(desktop_window->children, i);
+
+        if(child->index > window_index)
+        {
+            --child->index;
+        }
+    }
+
+    Window_remove(window);
+
+    Desktop_invalidate_start_bar(desktop_window);
+
+    Window_paint(desktop_window, (List *)0, 1);
+}
+
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

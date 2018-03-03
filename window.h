@@ -177,6 +177,9 @@ void Window_minimize(
 void Window_restore(
     Window *window);
 
+void Window_remove(
+    Window *window);
+
 #endif // _WINDOW_H_
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */
