@@ -44,38 +44,19 @@
 
 /* Code: */
 
-#ifndef _DESKTOP_H_
-#define _DESKTOP_H_
+#ifndef _TEXTBOX_H_
+#define _TEXTBOX_H_
 
-#include "list.h"
-#include "context.h"
 #include "window.h"
 
-#define MOUSE_WIDTH 11
-#define MOUSE_HEIGHT 18
-#define MOUSE_BUFSZ (MOUSE_WIDTH * MOUSE_HEIGHT)
-
-typedef struct Desktop_struct
+typedef struct TextBox_struct
 {
     Window window;
-    uint16_t mouse_x;
-    uint16_t mouse_y;
-} Desktop;
+} TextBox;
 
-Desktop *Desktop_new(Context *context);
+TextBox *TextBox_new(int x, int y, int width, int height);
+void TextBox_paint(Window *text_box_window);
 
-void Desktop_process_mouse(
-    Desktop *desktop, 
-    uint16_t x, 
-    uint16_t y, 
-    uint8_t mouse_button);
-
-void Desktop_paint_handler(
-    Window *desktop_window);
-
-void Desktop_invalidate_start_bar(
-    Window *desktop_window);
-
-#endif // _DESKTOP_H_
+#endif // _TEXTBOX_H_
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

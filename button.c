@@ -45,6 +45,7 @@
 /* Code: */
 
 #include "button.h"
+#include <string.h>
 
 Button *Button_new(int x, int y, int w, int h)
 {
@@ -54,7 +55,7 @@ Button *Button_new(int x, int y, int w, int h)
         return button;
     }
 
-    if(!Window_init((Window *) button, x, y, w, h, WIN_NODECORATION, (Context *) 0))
+    if(!Window_init((Window *) button, x, y, w, h, WIN_NODECORATION, (Context *) 0, 0))
     {
         free(button);
         return (Button *)0;
@@ -62,6 +63,7 @@ Button *Button_new(int x, int y, int w, int h)
 
     button->window.paint_function = Button_paint;
     button->window.mousedown_function = Button_mousedown_handler;
+    button->on_mousedown = (ButtonMousedownHandler)0;
 
     button->color_toggle = 0;
 
@@ -117,5 +119,10 @@ void Button_mousedown_handler(Window *button_window, int x, int y)
 
     Window_invalidate((Window *)button, 0, 0,
                       button->window.height - 1, button->window.width - 1);
+
+    if(button->on_mousedown)
+    {
+        button->on_mousedown(button, x, y);
+    }
 }
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

@@ -47,6 +47,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "desktop.h"
 #include "rect.h"
 #include <time.h>
@@ -93,7 +94,8 @@ Desktop *Desktop_new(Context *context)
            context->width, 
            context->height, 
            WIN_NODECORATION, 
-           context))
+           context,
+           0))
     {
         free(desktop);
         return (Desktop *)0;
@@ -197,8 +199,62 @@ void Desktop_process_mouse(
     printf("Painting Desktop took %dns\n", (int)nanoDiff);
 }
 
+#define START_BAR_HEIGHT 32
+#define START_BAR_ICON_WIDTH 64
+
+void Desktop_invalidate_start_bar(Window *desktop_window)
+{
+    Window_invalidate(
+        desktop_window, 
+        0,
+        desktop_window->height - START_BAR_HEIGHT,
+        desktop_window->width,
+        desktop_window->height);
+}
+
+void Desktop_draw_start_bar(Window *desktop_window)
+{
+    int i;
+    Window *child;
+    int active_child;
+    
+    Context_fill_rect(
+        desktop_window->context,
+        0,
+        desktop_window->height - START_BAR_HEIGHT,
+        desktop_window->width,
+        START_BAR_HEIGHT,
+        0xFF101010);
+
+    for(i = 0; i < desktop_window->children->count; ++i)
+    {
+        child = (Window *)List_get_at(desktop_window->children, i);
+
+        active_child = desktop_window->active_child && (desktop_window->active_child == child);
+
+        Context_fill_rect(
+            desktop_window->context,
+            32 + (START_BAR_ICON_WIDTH + 10)*i,
+            desktop_window->height - 32 + 6,
+            START_BAR_ICON_WIDTH,
+            20,
+            active_child ? 0xFFFFFFFF : 0xFF4F4F4F);
+
+        char *string[32];
+
+        sprintf(string, "%d", child->index);
+        
+        Context_draw_text(
+            desktop_window->context, 
+            string, 
+            40 + (START_BAR_ICON_WIDTH + 10)*i,
+            desktop_window->height - 32 + 6, 0xFFFF0000);
+    }
+}
+
 void Desktop_paint_handler(Window *desktop_window)
 {
+    // TODO: Draw bitmap when possible
     Context_fill_rect(
         desktop_window->context, 
         0, 
@@ -207,12 +263,7 @@ void Desktop_paint_handler(Window *desktop_window)
         desktop_window->context->height, 
         0xFFFF9933);
 
-    Context_draw_text(
-        desktop_window->context, 
-        "Hello World!", 
-        40, 
-        desktop_window->height - 40, 
-        0xFFFFFFFF);
+    Desktop_draw_start_bar(desktop_window);  
 }
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

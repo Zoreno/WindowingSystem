@@ -47,6 +47,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "window.h"
 #include "context.h"
@@ -67,7 +68,8 @@ Window *Window_new(
     unsigned int width, 
     unsigned int height,
     uint16_t flags,
-    Context *context)
+    Context *context,
+    uint32_t index)
 {
     Window *window;
     if(!(window = (Window *)malloc(sizeof(Window))))
@@ -75,7 +77,7 @@ Window *Window_new(
         return window;
     }
 
-    if(!Window_init(window, x, y, width, height, flags, context))
+    if(!Window_init(window, x, y, width, height, flags, context, index))
     {
         free(window);
 
@@ -92,7 +94,8 @@ int Window_init(
     uint16_t width, 
     uint16_t height,
     uint16_t flags, 
-    Context *context)
+    Context *context,
+    uint32_t index)
 {
     if(!(window->children = List_new()))
     {
@@ -114,6 +117,7 @@ int Window_init(
     window->drag_off_y = 0;
     window->mousedown_function = Window_mousedown_handler;
     window->title = (char *)0;
+    window->index = index;
 
     return 1;
 }
@@ -144,6 +148,11 @@ void Window_update_title(Window *window)
     int screen_y;
 
     if(!window->context)
+    {
+        return;
+    }
+
+    if(window->flags & WIN_MINIMIZED)
     {
         return;
     }
@@ -291,7 +300,10 @@ void Window_apply_bound_clipping(Window *window, int in_recursion, List *dirty_r
 
 }
 
-void Window_paint(Window *window, List *dirty_regions, uint8_t paint_children)
+void Window_paint(
+    Window *window, 
+    List *dirty_regions, 
+    uint8_t paint_children)
 {
     int i;
     int j;
@@ -305,6 +317,11 @@ void Window_paint(Window *window, List *dirty_regions, uint8_t paint_children)
 
     if(!window->context)
         return;
+
+    if(window->flags & WIN_MINIMIZED)
+    {
+        return;
+    }
 
     Window_apply_bound_clipping(window, 0, dirty_regions);
 
@@ -328,6 +345,11 @@ void Window_paint(Window *window, List *dirty_regions, uint8_t paint_children)
     for(i = 0; i < window->children->count; ++i)
     {
         current_child = (Window *)List_get_at(window->children, i);
+
+        if(current_child->flags & WIN_MINIMIZED)
+        {
+            continue;
+        }
         
         child_screen_x = Window_screen_x(current_child);
         child_screen_y = Window_screen_y(current_child);
@@ -420,6 +442,11 @@ List *Window_get_windows_above(Window *parent, Window *window)
     for(; i < parent->children->count; ++i)
     {
         current_window = (Window *)List_get_at(parent->children, i);
+        
+        if(current_window->flags & WIN_MINIMIZED)
+        {
+            continue;
+        }
 
         if(current_window->x <= (window->x + window->width - 1) &&
            (current_window->x + current_window->width - 1) >= window->x &&
@@ -456,6 +483,11 @@ List *Window_get_windows_below(Window *parent, Window *child)
     {
         current_window = List_get_at(parent->children, i);
 
+        if(current_window->flags & WIN_MINIMIZED)
+        {
+            continue;
+        }
+
         if(current_window->x <= (child->x + child->width - 1) && 
            (current_window->x + current_window->width - 1) >= child->x && 
            current_window->y <= (child->y + child->height - 1) && 
@@ -485,6 +517,11 @@ void Window_process_mouse(
     for(i = window->children->count - 1; i >= 0; --i)
     {
         child = (Window *)List_get_at(window->children, i);
+
+        if(child->flags & WIN_MINIMIZED)
+        {
+            continue;
+        }
 
         if(!(mouse_x >= child->x && mouse_x < (child->x + child->width) &&
            mouse_y >= child->y && mouse_y < (child->y + child->height)))
@@ -563,7 +600,9 @@ Window *Window_create_window(Window *window, int16_t x, int16_t y,
 {
     Window *new_window;
 
-    if(!(new_window = Window_new(x, y, width, height, flags, window->context)))
+    uint32_t new_index = window->children->count;
+
+    if(!(new_window = Window_new(x, y, width, height, flags, window->context, new_index)))
     {
         return new_window;
     }
@@ -621,6 +660,10 @@ void Window_raise(Window *window, uint8_t do_draw)
     Window_paint(window, (List *)0, 1);
 
     Window_update_title(last_active);
+
+    Desktop_invalidate_start_bar(parent);
+
+    Window_paint(parent, (List *)0, 1);
 }
 
 void Window_move(Window *window, int new_x, int new_y)
@@ -715,7 +758,7 @@ void Window_invalidate(Window *window, int top, int left, int bottom, int right)
         return;
     }
 
-    Window_paint(window, dirty_regions, 0);
+    Window_paint(window, dirty_regions, 1);
 
 
     List_remove_at(dirty_regions, 0);
@@ -754,6 +797,73 @@ void Window_set_title(Window *window, char *new_title)
     {
         Window_update_title(window);
     }
+}
+
+void Window_append_title(Window *window, char *add_c)
+{
+    char *new_string;
+    int orig_len;
+    int add_len;
+    int i;
+    
+    if(!window->title)
+    {
+        Window_set_title(window, add_c);
+    }
+
+    orig_len = strlen(window->title);
+    add_len = strlen(add_c);
+
+    if(!(new_string = (char *)malloc(sizeof(char) * (orig_len + add_len + 1))))
+    {
+        return;
+    }
+
+    strncpy(new_string, window->title, orig_len);
+    strncpy(new_string + orig_len, add_c, add_len);
+    new_string[orig_len + add_len] = '\0';
+
+    free(window->title);
+    
+    window->title = new_string;
+
+    if(window->flags & WIN_NODECORATION)
+    {
+        Window_invalidate(window, 0, 0, window->height - 1, window->width - 1);
+    }
+    else
+    {
+        Window_update_title(window);
+    }
+}
+
+void Window_minimize(Window *window)
+{
+    window->flags |= (WIN_MINIMIZED);
+
+    Window_invalidate(
+        window->parent, 
+        window->y, 
+        window->x, 
+        window->y + window->height - 1, 
+        window->x + window->width - 1);
+
+    // TODO: Find another window to raise by picking random or create
+    // a list of newly used windows.
+}
+
+void Window_restore(Window *window)
+{
+    window->flags &= ~(WIN_MINIMIZED);
+
+    Window_invalidate(
+        window->parent, 
+        window->y, 
+        window->x, 
+        window->y + window->height - 1, 
+        window->x + window->width - 1);
+
+    Window_raise(window, 1);
 }
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

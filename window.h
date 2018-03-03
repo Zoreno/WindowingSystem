@@ -61,6 +61,7 @@
 #define WIN_BORDERWIDTH 3
 
 #define WIN_NODECORATION 0x1
+#define WIN_MINIMIZED 0x2
 
 struct Window_struct;
 
@@ -96,6 +97,8 @@ typedef struct Window_struct
     WindowMousedownHandler mousedown_function;
 
     char *title;
+
+    uint32_t index;
 } Window;
 
 Window *Window_new(
@@ -104,7 +107,8 @@ Window *Window_new(
     unsigned int width, 
     unsigned int height,
     uint16_t flags,
-    Context *context);
+    Context *context,
+    uint32_t index);
 
 int Window_init(
     Window *window, 
@@ -113,7 +117,8 @@ int Window_init(
     uint16_t width, 
     uint16_t height,
     uint16_t flags, 
-    Context *context);
+    Context *context,
+    uint32_t index);
 
 void Window_paint(
     Window *window,
@@ -165,6 +170,12 @@ void Window_invalidate(
 void Window_set_title(
     Window *window, 
     char *new_title);
+
+void Window_minimize(
+    Window *window);
+
+void Window_restore(
+    Window *window);
 
 #endif // _WINDOW_H_
 

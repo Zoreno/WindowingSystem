@@ -50,15 +50,39 @@ TODO List:
 
 Primary goals:
 
-Text rendering
-Window title
-Remove windows.
+Remove windows
+Resize windows
+Minimize windows
+Window icon
+
+Window Handle
+
+Additional flags
+ - Resizable
+ - Visible
+ - Decorated
+ - Focused
+ - Should close
+
+Quality of life size/dimension accessors
+ - Vectors
+ - Bounding rect
+ - Aspect ratio
 
 Render bitmaps
 
-Mouse Up/Down events
-Mouse Scroll events
-Keyboard events
+Window Events
+ - Key
+ - Mouse Up
+ - Mouse Down
+ - Mouse Moved
+ - Mouse Scroll
+ - Gained focus
+ - Lost focus
+ - Iconified
+ - Restored
+ - Cursor enter
+ - Resized
 
 Simple controls
  - Button
@@ -72,9 +96,15 @@ Simple Applications
 
 Secondary goals:
 
-Theme
+Multiple themes
+
+Multiple fonts
+ - Get advance and height and such from fonts
+
 Start bar
 
+Create a pipe or socket to communicate to external programs. 
+ - Syscall-like syntax is preferred to emulate OS environment.
 
 
  */
@@ -150,7 +180,7 @@ int main(int argc, char **argv)
     desktop = Desktop_new(context);
     
     Window_create_window((Window *)desktop, 10, 10, 300, 200, 0);
-    Window *window = Window_create_window((Window *)desktop, 100, 150, 400, 400, 0);
+    Window *window = Window_create_window((Window *)desktop, 100, 150, 400, 400, WIN_MINIMIZED);
     Window_create_window((Window *)desktop, 200, 100, 200, 600, 0);
 
     Button *button = Button_new(307, 357, 80, 30);
@@ -160,8 +190,6 @@ int main(int argc, char **argv)
     Button *button2 = Button_new(307, 257, 80, 30);
     Window_insert_child(window, (Window *)button2);
     Window_set_title((Window *)button2, "Button2");
-
-    Window_set_title(window, "Button Window");
 
     Window_paint((Window *)desktop, (List *)0, 1);
 
@@ -179,6 +207,19 @@ int main(int argc, char **argv)
             case SDL_QUIT:
                 quit = 1;
                 break;
+            case SDL_KEYDOWN:
+                switch(event.key.keysym.sym)
+                {
+                    case SDLK_e:
+                        Window_minimize(window);
+                        break;
+                    case SDLK_r:
+                        Window_restore(window);
+                        break;
+                }
+                
+                break;
+
             case SDL_MOUSEBUTTONUP:
                 if(event.button.button == SDL_BUTTON_LEFT)    
                     buttonState &= ~(1<<0);
