@@ -5,7 +5,7 @@
 # @version 0.1
 
 CFLAGS := -g -Wall -Wextra -Wpedantic
-LDFLAGS := -g -lSDL2
+LDFLAGS := -g -lSDL2 -lpthread
 
 all: main list listnode context desktop rect window button textbox
 	gcc *.o $(LDFLAGS) -o sdltest

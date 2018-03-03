@@ -265,7 +265,22 @@ int main(int argc, char **argv)
                         break;
                 }
                 
+                Window_process_keyboard(
+                    (Window *)desktop, 
+                    event.key.keysym.sym,
+                    event.key.keysym.mod,
+                    0);
+
                 break;
+                
+            case SDL_KEYUP:
+                
+                
+                Window_process_keyboard(
+                    (Window *)desktop, 
+                    event.key.keysym.sym,
+                    event.key.keysym.mod,
+                    1);
 
             case SDL_MOUSEBUTTONUP:
                 if(event.button.button == SDL_BUTTON_LEFT)    

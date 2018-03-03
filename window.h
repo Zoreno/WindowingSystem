@@ -63,43 +63,63 @@
 #define WIN_NODECORATION 0x1
 #define WIN_MINIMIZED 0x2
 #define WIN_SHOULD_CLOSE 0x4
+#define WIN_NO_DRAG 0x8
+#define WIN_NO_RESIZE 0x10
+
+#define WIN_DEFAULT_MIN_WIDTH 72
+#define WIN_DEFAULT_MIN_HEIGHT 48
+#define WIN_DEFAULT_MAX_WIDTH 4096
+#define WIN_DEFAULT_MAX_HEIGHT 4096
 
 struct Window_struct;
 
 typedef void (*WindowPaintHandler)(struct Window_struct *);
 typedef void (*WindowMousedownHandler)(struct Window_struct *, int, int);
+typedef void (*WindowKeyHandler)(struct Window_struct *, int, int, int);
 
 typedef struct Window_struct
 {
     struct Window_struct *parent;
 
+    // Window state
+
     int16_t x;
     int16_t y;
-
     uint16_t width;
     uint16_t height;
-
     uint16_t flags;
-
     Context *context;
-
     List *children;
-
     uint8_t last_button_state;
-
-    WindowPaintHandler paint_function;
-
-    struct Window_struct *drag_child;
-    struct Window_struct *active_child;
-
-    int16_t drag_off_x;
-    int16_t drag_off_y;
-
-    WindowMousedownHandler mousedown_function;
 
     char *title;
 
     uint32_t index;
+
+    // Settings
+
+    uint16_t min_width;
+    uint16_t min_height;
+
+    uint16_t max_width;
+    uint16_t max_height;
+
+    // Subwindow handling
+
+    struct Window_struct *drag_child;
+    struct Window_struct *active_child;
+
+    int dragging;
+    int resizing;
+    int16_t drag_off_x;
+    int16_t drag_off_y;
+
+    // Callbacks
+
+    WindowPaintHandler paint_function;
+    WindowMousedownHandler mousedown_function;
+    WindowKeyHandler key_function;
+
 } Window;
 
 Window *Window_new(
@@ -131,6 +151,12 @@ void Window_process_mouse(
     uint16_t mouse_x, 
     uint16_t mouse_y, 
     uint8_t mouse_buttons);
+
+void Window_process_keyboard(
+    Window *window,
+    int key,
+    int mods,
+    int action);
 
 List *Window_get_windows_above(
     Window *parent, 

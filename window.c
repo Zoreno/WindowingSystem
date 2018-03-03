@@ -56,6 +56,7 @@
 
 void Window_paint_handler(Window *window);
 void Window_mousedown_handler(Window *window, int x, int y);
+void Window_key_handler(Window *window, int key, int mods, int action);
 
 
 uint8_t pseudo_rand_8()
@@ -104,6 +105,7 @@ int Window_init(
         return 0;
     }
 
+    // Initiate state variables
     window->x = x;
     window->y = y;
     window->width = width;
@@ -120,7 +122,25 @@ int Window_init(
     window->mousedown_function = Window_mousedown_handler;
     window->title = (char *)0;
     window->index = index;
+    window->key_function = Window_key_handler;
 
+    // Initiate settings
+    window->min_width = WIN_DEFAULT_MIN_WIDTH;
+    window->min_height = WIN_DEFAULT_MIN_HEIGHT;
+    window->max_width = WIN_DEFAULT_MAX_WIDTH;
+    window->max_height = WIN_DEFAULT_MAX_HEIGHT;
+
+
+    // Check if state is valid
+    window->width = window->width > window->min_width ? window->width : window->min_width;
+    window->height = window->height > window->min_height ? window->height : window->min_height;
+
+    window->width = window->width < window->max_width ? window->width : window->max_width;
+    window->height = window->height < window->max_height ? window->height : window->max_height;
+
+    window->dragging = 0;
+    window->resizing = 0;
+    
     return 1;
 }
 
@@ -571,7 +591,8 @@ void Window_process_mouse(
     int inner_y1;
     int inner_x2;
     int inner_y2;
-    
+   
+
     Window *current_child;
     Window *child;
 
@@ -626,14 +647,29 @@ void Window_process_mouse(
                 {
                     Window_request_close(child);
                 }
-                else
+                else if(!(window->flags & WIN_NO_DRAG))
                 {
+                    window->dragging = 1;
                     window->drag_off_x = mouse_x - child->x;
                     window->drag_off_y = mouse_y - child->y;
                     window->drag_child = child;
                     
                     break;
                 }
+            } 
+
+            if(!(child->flags & WIN_NODECORATION ) &&
+               !(child->flags & WIN_NO_RESIZE) &&
+               mouse_x >= child->x + child->width - 16 &&
+               mouse_x < child->x + child->width &&
+               mouse_y >= child->y + child->height - 16 && 
+               mouse_y < child->y + child->height)
+            {
+                window->resizing = 1;
+                window->drag_off_x = mouse_x - child->width;
+                window->drag_off_y = mouse_y - child->height;
+
+                window->drag_child = child;
             }
         }
 
@@ -643,13 +679,23 @@ void Window_process_mouse(
 
     if(!mouse_buttons)
     {
+        window->dragging = 0;
+        window->resizing = 0;
         window->drag_child = (Window *)0;
     }
 
-    if(window->drag_child)
+    if(window->drag_child && window->dragging)
     {
         Window_move(
             window->drag_child, 
+            mouse_x - window->drag_off_x,
+            mouse_y - window->drag_off_y);
+    }
+
+    if(window->drag_child && window->resizing)
+    {
+        Window_resize(
+            window->drag_child,
             mouse_x - window->drag_off_x,
             mouse_y - window->drag_off_y);
     }
@@ -669,7 +715,28 @@ void Window_process_mouse(
     free(processing_windows);
 }
 
+void Window_process_keyboard(
+    Window *window,
+    int key,
+    int mods,
+    int action)
+{
+    if(window->active_child)
+    {
+        Window_process_keyboard(window->active_child, key, mods, action);
+    }
+    else if(window->key_function)
+    {
+        window->key_function(window, key, mods, action);
+    }
+}
+
 void Window_mousedown_handler(Window *window, int x, int y)
+{
+    return;
+}
+
+void Window_key_handler(Window *window, int key, int mods, int action)
 {
     return;
 }
@@ -832,6 +899,88 @@ void Window_move(Window *window, int new_x, int new_y)
 
     Window_paint(window, (List *)0, 1);
 
+}
+
+void Window_resize(Window *window, int new_width, int new_height)
+{
+    // Make sure that constraints of the window is held
+    if(new_width < window->min_width)
+    {
+        new_width = window->min_width;
+    }
+
+    if(new_height < window->min_height)
+    {
+        new_height = window->min_height;
+    }
+
+    if(new_width > window->max_width)
+    {
+        new_width = window->max_width;
+    }
+
+    if(new_height > window->max_height)
+    {
+        new_height = window->max_height;
+    }
+    
+    printf("New Width: %i, New Height: %i\n", new_width, new_height);
+    int i;
+    int old_width = window->width;
+    int old_height = window->height;
+    
+    Rect new_window_rect;
+    List *replacement_list;
+    List *dirty_list;
+    List *dirty_windows;
+
+    Window_raise(window, 0);
+    
+    Window_apply_bound_clipping(window, 0, (List *)0);
+
+    window->width = new_width;
+    window->height = new_height;
+
+    new_window_rect.top = Window_screen_y(window);
+    new_window_rect.left = Window_screen_x(window);
+    new_window_rect.bottom = new_window_rect.top + window->height - 1;
+    new_window_rect.right = new_window_rect.left + window->width - 1;
+
+    window->width = old_width;
+    window->height = old_height;
+
+    Context_subtract_clip_rect(window->context, &new_window_rect);
+
+    if(!(replacement_list = List_new()))
+    {
+        Context_clear_clip_rects(window->context);
+        return;
+    }
+
+    dirty_list = window->context->clip_rects;
+    window->context->clip_rects = replacement_list;
+
+    dirty_windows = Window_get_windows_below(window->parent, window);
+
+    window->width = new_width;
+    window->height = new_height;
+    
+    while(dirty_windows->count)
+    {
+        Window_paint((Window *)List_remove_at(dirty_windows, 0), dirty_list, 1);
+    }
+
+    Window_paint(window, (List *)0, 1);
+    Window_paint(window->parent, dirty_list, 0);
+    
+
+    while(dirty_list->count)
+    {
+        free(List_remove_at(dirty_list, 0));
+    }
+
+    free(dirty_list);
+    free(dirty_windows);
 }
 
 void Window_invalidate(Window *window, int top, int left, int bottom, int right)

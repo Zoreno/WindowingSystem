@@ -104,6 +104,7 @@ Desktop *Desktop_new(Context *context)
     desktop->window.parent = (Window *)0;
 
     desktop->window.paint_function = Desktop_paint_handler;
+    desktop->window.key_function = (WindowKeyHandler)0;
 
     desktop->window.last_button_state = 0;
 
