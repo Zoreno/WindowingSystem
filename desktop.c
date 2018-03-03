@@ -101,6 +101,8 @@ Desktop *Desktop_new(Context *context)
         return (Desktop *)0;
     }
 
+    desktop->window.parent = (Window *)0;
+
     desktop->window.paint_function = Desktop_paint_handler;
 
     desktop->window.last_button_state = 0;
@@ -126,8 +128,11 @@ void Desktop_process_mouse(
     int y;
 
     Window *child;
+    Window *desktop_window = (Window *)desktop;
     List *dirty_list;
     Rect *mouse_rect;
+
+    List *pending_remove;
 
 
     /*
@@ -140,6 +145,28 @@ void Desktop_process_mouse(
      * Do the mouse handling/painting
      */
     Window_process_mouse((Window *)desktop, mouse_x, mouse_y, mouse_buttons);
+
+    if(pending_remove = List_new())
+    {
+        for(i = 0; i < desktop_window->children->count; ++i)
+        {
+            child = (Window *)List_get_at(desktop_window->children, i);
+            
+            if(child->flags & WIN_SHOULD_CLOSE)
+            {
+                List_add(pending_remove, child);
+            }
+        }
+        
+        while(pending_remove->count)
+        {
+            child = (Window *)List_remove_at(pending_remove, 0);
+            
+            Desktop_remove_window(desktop_window, child);
+        }
+        
+        free(pending_remove);
+    }
 
     if(!(dirty_list = List_new()))
     {
@@ -156,7 +183,7 @@ void Desktop_process_mouse(
 
     List_add(dirty_list, mouse_rect);
 
-    Window_paint((Window *)desktop, dirty_list, 1);
+    Window_paint(desktop_window, dirty_list, 1);
 
     List_remove_at(dirty_list, 0);
     free(dirty_list);
@@ -187,7 +214,8 @@ void Desktop_process_mouse(
             }
         }
     }
-    
+
+
     /*
      * Get the time after updating
      */
@@ -272,7 +300,8 @@ Window *Desktop_create_window(
     int16_t y, 
     uint16_t width, 
     uint16_t height, 
-    uint16_t flags)
+    uint16_t flags, 
+    char *title)
 {
     Window *new_window = Window_create_window(desktop_window, x, y, width, height, flags);
 
@@ -280,6 +309,8 @@ Window *Desktop_create_window(
     {
         return new_window;
     }
+
+    Window_set_title(new_window, title);
 
     Desktop_invalidate_start_bar(desktop_window);
 
@@ -309,6 +340,8 @@ void Desktop_remove_window(
     }
 
     Window_remove(window);
+
+    desktop_window->active_child = (Window *)0;
 
     Desktop_invalidate_start_bar(desktop_window);
 

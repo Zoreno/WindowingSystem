@@ -62,6 +62,7 @@
 
 #define WIN_NODECORATION 0x1
 #define WIN_MINIMIZED 0x2
+#define WIN_SHOULD_CLOSE 0x4
 
 struct Window_struct;
 
@@ -171,13 +172,33 @@ void Window_set_title(
     Window *window, 
     char *new_title);
 
+void Window_append_title(
+    Window *window,
+    char *add_c);
+
+void Window_get_title(
+    Window *window,
+    char *buf);
+
 void Window_minimize(
     Window *window);
 
 void Window_restore(
     Window *window);
 
+int Window_minimized(
+    Window *window);
+
 void Window_remove(
+    Window *window);
+
+void Window_close(
+    Window *window);
+
+int Window_should_close(
+    Window *window);
+
+void Window_request_close(
     Window *window);
 
 #endif // _WINDOW_H_

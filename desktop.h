@@ -82,7 +82,8 @@ Window *Desktop_create_window(
     int16_t y, 
     uint16_t width, 
     uint16_t height, 
-    uint16_t flags);
+    uint16_t flags,
+    char *title);
 
 void Desktop_remove_window(
     Window *desktop_window, 

@@ -51,6 +51,8 @@
 
 #include "window.h"
 #include "context.h"
+#include "desktop.h"
+#include "button.h"
 
 void Window_paint_handler(Window *window);
 void Window_mousedown_handler(Window *window, int x, int y);
@@ -208,6 +210,22 @@ void Window_draw_border(Window *window)
         screen_x + 10,
         screen_y + 10,
         window->parent->active_child == window ? WIN_TEXTCOLOR : WIN_TEXTCOLOR_INACTIVE);
+
+    Context_fill_rect(
+        window->context,
+        screen_x + window->width - 24,
+        screen_y + 8,
+        16,
+        16,
+        0xFFFF0000);
+
+    Context_draw_text(
+        window->context,
+        "x",
+        screen_x + window->width - 20,
+        screen_y + 8,
+        0xFF000000);
+
 }
 
 void Window_apply_bound_clipping(Window *window, int in_recursion, List *dirty_regions)
@@ -601,11 +619,21 @@ void Window_process_mouse(
             if(!(child->flags & WIN_NODECORATION) &&
                mouse_y >= child->y && mouse_y < (child->y + 31))
             {
-                window->drag_off_x = mouse_x - child->x;
-                window->drag_off_y = mouse_y - child->y;
-                window->drag_child = child;
-
-                break;
+                if(mouse_x >= child->x + child->width - 24 && 
+                   mouse_x < child->x + child->width - 8 &&
+                   mouse_y >= child->y + 8 &&
+                   mouse_y < child->y + 24)
+                {
+                    Window_request_close(child);
+                }
+                else
+                {
+                    window->drag_off_x = mouse_x - child->x;
+                    window->drag_off_y = mouse_y - child->y;
+                    window->drag_child = child;
+                    
+                    break;
+                }
             }
         }
 
@@ -916,6 +944,21 @@ void Window_append_title(Window *window, char *add_c)
     }
 }
 
+void Window_get_title(Window *window, char *buf)
+{
+    if(!window->title)
+    {
+        *buf = '\0';
+        return;
+    }
+    
+    uint32_t len = strlen(window->title);
+
+    strncpy(buf, window->title, len);
+
+    buf[len] = '\0';
+}
+
 void Window_minimize(Window *window)
 {
     window->flags |= (WIN_MINIMIZED);
@@ -943,6 +986,11 @@ void Window_restore(Window *window)
         window->x + window->width - 1);
 
     Window_raise(window, 1);
+}
+
+int Window_minimized(Window *window)
+{
+    return window->flags & WIN_MINIMIZED;
 }
 
 void Window_remove(Window *window)
@@ -986,6 +1034,21 @@ void Window_remove(Window *window)
     free(window->title);
 
     free(window);
+}
+
+void Window_close(Window *window)
+{
+    Desktop_remove_window(window->parent, window);
+}
+
+int Window_should_close(Window *window)
+{
+    return window->flags & WIN_SHOULD_CLOSE;
+}
+
+void Window_request_close(Window *window)
+{
+    window->flags |= WIN_SHOULD_CLOSE;
 }
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */

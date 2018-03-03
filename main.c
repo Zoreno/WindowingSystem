@@ -50,19 +50,12 @@ TODO List:
 
 Primary goals:
 
-Remove windows
 Resize windows
-Minimize windows
 Window icon
-
-Window Handle
 
 Additional flags
  - Resizable
- - Visible
- - Decorated
  - Focused
- - Should close
 
 Quality of life size/dimension accessors
  - Vectors
@@ -179,9 +172,32 @@ int main(int argc, char **argv)
 
     desktop = Desktop_new(context);
     
-    Desktop_create_window((Window *)desktop, 10, 10, 300, 200, 0);
-    Window *window = Desktop_create_window((Window *)desktop, 100, 150, 400, 400, 0);
-    Desktop_create_window((Window *)desktop, 200, 100, 200, 600, 0);
+    Desktop_create_window(
+        (Window *)desktop, 
+        10, 
+        10, 
+        300, 
+        200, 
+        0, 
+        "Window 1");
+
+    Window *window = Desktop_create_window(
+        (Window *)desktop, 
+        100, 
+        150, 
+        400, 
+        400, 
+        0, 
+        "Button Window");
+    
+    Desktop_create_window(
+        (Window *)desktop, 
+        200, 
+        100, 
+        200, 
+        600, 
+        0, 
+        "Window 2");
 
     Button *button = Button_new(307, 357, 80, 30);
     Window_insert_child(window, (Window *)button);
@@ -192,6 +208,9 @@ int main(int argc, char **argv)
     Window_set_title((Window *)button2, "Button2");
 
     Window_paint((Window *)desktop, (List *)0, 1);
+
+    int cascade_index_x = 0;
+    int cascade_index_y = 0;
 
     while(!quit)
     {
@@ -217,10 +236,32 @@ int main(int argc, char **argv)
                         Window_restore(window);
                         break;
                     case SDLK_n:
-                        Desktop_create_window((Window *)desktop, 10, 10, 300, 200, 0);
+                        Desktop_create_window(
+                            (Window *)desktop, 
+                            10 + 16*cascade_index_x, 
+                            10 + 16*cascade_index_y, 
+                            300, 
+                            200, 
+                            0, 
+                            "Random Window");
+                        
+                        ++cascade_index_x;
+                        ++cascade_index_y;
+
+                        cascade_index_x %= 10;
+                        cascade_index_y %= 5;
+                        
+
                         break;
                     case SDLK_k:
-                        Desktop_remove_window((Window *)desktop, window);
+                        {
+                            Window *desktop_window = (Window *)desktop;
+                            
+                            if(desktop_window->active_child)
+                                Desktop_remove_window(
+                                    desktop_window, 
+                                    desktop_window->active_child);
+                        }
                         break;
                 }
                 
