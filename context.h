@@ -90,6 +90,27 @@ void Context_fill_rect(
     unsigned int height, 
     uint32_t color);
 
+void Context_clipped_bitmap(
+    Context *context,
+    int source_x,
+    int source_y,
+    int dest_x,
+    int dest_y,
+    unsigned int width,
+    unsigned int height,
+    Rect *clip_area,
+    unsigned int *source);
+
+void Context_fill_bitmap(
+    Context *context,
+    int source_x, 
+    int source_y,
+    int dest_x,
+    int dest_y,
+    unsigned int width, 
+    unsigned int height, 
+    unsigned int *source);
+
 void Context_horizontal_line(
     Context *context,
     int x,

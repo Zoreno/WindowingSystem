@@ -50,6 +50,7 @@
 #include "list.h"
 #include "context.h"
 #include "window.h"
+#include <pthread.h>
 
 #define MOUSE_WIDTH 11
 #define MOUSE_HEIGHT 18
@@ -62,6 +63,10 @@ typedef struct Desktop_struct
     uint16_t mouse_y;
 
     Window *taskbar;
+
+    unsigned int *background;
+
+    pthread_mutex_t mutex;
 } Desktop;
 
 Desktop *Desktop_new(Context *context);

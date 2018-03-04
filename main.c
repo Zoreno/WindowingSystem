@@ -50,11 +50,9 @@ TODO List:
 
 Primary goals:
 
-Resize windows
 Window icon
 
 Additional flags
- - Resizable
  - Focused
 
 Quality of life size/dimension accessors
@@ -94,7 +92,7 @@ Multiple themes
 Multiple fonts
  - Get advance and height and such from fonts
 
-Start bar
+Start Menu
 
 Create a pipe or socket to communicate to external programs. 
  - Syscall-like syntax is preferred to emulate OS environment.
@@ -115,15 +113,41 @@ Create a pipe or socket to communicate to external programs.
 #include <pthread.h>
 
 Desktop *desktop;
+int quit = 0;
 
 void main_mouse_callback(uint16_t mouse_x, uint16_t mouse_y, uint8_t buttons)
 {
+    pthread_mutex_lock(&desktop->mutex);
     Desktop_process_mouse(desktop, mouse_x, mouse_y, buttons);
+    pthread_mutex_unlock(&desktop->mutex);
+}
+
+void main_keyboard_callback(int key, int mods, int action)
+{
+    pthread_mutex_lock(&desktop->mutex);
+    Window_process_mouse((Window *)desktop, key, mods, action);
+    pthread_mutex_unlock(&desktop->mutex);   
+}
+
+void tick_thread_func()
+{
+    int ticks = 0;
+
+    while(!quit)
+    {
+        // TODO: More robust tick system for counting ticks.
+        usleep(50000);
+
+        ticks = 50;
+
+        pthread_mutex_lock(&desktop->mutex);
+        Window_process_tick((Window *)desktop, ticks);
+        pthread_mutex_unlock(&desktop->mutex);
+    }
 }
 
 int main(int argc, char **argv)
 {
-    int quit = 0;
     SDL_Event event;
 
     uint32_t screen_width = 1024;
@@ -140,6 +164,8 @@ int main(int argc, char **argv)
     int cascade_index_y = 0;
 
     Context *context;
+
+    pthread_t tick_thread;
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -215,112 +241,123 @@ int main(int argc, char **argv)
 
     Window_paint((Window *)desktop, (List *)0, 1);
 
+    if(pthread_create(&tick_thread, NULL, tick_thread_func, NULL))
+    {
+        sprintf(stderr, "Failed to create tick thread");
+    }
+
+    int got_event = 0;
+
     while(!quit)
     {
-        SDL_WaitEvent(&event);
 
+        got_event = SDL_WaitEventTimeout(&event, 100);
+            
         int mouse_x;
         int mouse_y;
         
-        switch(event.type)
+        if(got_event)
         {
-            case SDL_QUIT:
-                quit = 1;
-                break;
-            case SDL_KEYDOWN:
-                switch(event.key.keysym.sym)
-                {
-                    case SDLK_e:
-                        Window_minimize(window);
-                        break;
-                    case SDLK_r:
-                        Window_restore(window);
-                        break;
-                    case SDLK_n:
-                        Desktop_create_window(
-                            (Window *)desktop, 
-                            10 + 16*cascade_index_x, 
-                            10 + 16*cascade_index_y, 
-                            300, 
-                            200, 
-                            0, 
-                            "Random Window");
-                        
-                        ++cascade_index_x;
-                        ++cascade_index_y;
-
-                        cascade_index_x %= 10;
-                        cascade_index_y %= 5;
-                        
-
-                        break;
-                    case SDLK_k:
-                        {
-                            Window *desktop_window = (Window *)desktop;
+            
+            switch(event.type)
+            {
+                case SDL_QUIT:
+                    quit = 1;
+                    break;
+                case SDL_KEYDOWN:
+                    switch(event.key.keysym.sym)
+                    {
+                        case SDLK_e:
+                            Window_minimize(window);
+                            break;
+                        case SDLK_r:
+                            Window_restore(window);
+                            break;
+                        case SDLK_n:
+                            Desktop_create_window(
+                                (Window *)desktop, 
+                                10 + 16*cascade_index_x, 
+                                10 + 16*cascade_index_y, 
+                                300, 
+                                200, 
+                                0, 
+                                "Random Window");
                             
-                            if(desktop_window->active_child)
-                                Desktop_remove_window(
-                                    desktop_window, 
-                                    desktop_window->active_child);
-                        }
-                        break;
-                }
-                
-                Window_process_keyboard(
-                    (Window *)desktop, 
-                    event.key.keysym.sym,
-                    event.key.keysym.mod,
-                    0);
-
-                break;
-                
-            case SDL_KEYUP:
-                
-                
-                Window_process_keyboard(
-                    (Window *)desktop, 
-                    event.key.keysym.sym,
-                    event.key.keysym.mod,
-                    1);
-
-            case SDL_MOUSEBUTTONUP:
-                if(event.button.button == SDL_BUTTON_LEFT)    
-                    buttonState &= ~(1<<0);
-                if(event.button.button == SDL_BUTTON_RIGHT)
-                    buttonState &= ~(1<<1);
-
-                SDL_GetMouseState(&mouse_x, &mouse_y);
-
-                main_mouse_callback((uint16_t) mouse_x, (uint16_t) mouse_y, buttonState);
-                
-                break;
-            case SDL_MOUSEBUTTONDOWN:
-                if(event.button.button == SDL_BUTTON_LEFT)    
-                    buttonState |= (1<<0);
-                if(event.button.button == SDL_BUTTON_RIGHT)
-                    buttonState |= (1<<1);
-                
-                SDL_GetMouseState(&mouse_x, &mouse_y);
-
-                main_mouse_callback((uint16_t) mouse_x, (uint16_t) mouse_y, buttonState);
-                
-                break;
-
-            case SDL_MOUSEMOTION:                
-                SDL_GetMouseState(&mouse_x, &mouse_y);
-
-                main_mouse_callback((uint16_t) event.motion.x, (uint16_t) event.motion.y, buttonState);
-                
-                break;
+                            ++cascade_index_x;
+                            ++cascade_index_y;
+                            
+                            cascade_index_x %= 10;
+                            cascade_index_y %= 5;
+                            
+                            
+                            break;
+                        case SDLK_k:
+                            {
+                                Window *desktop_window = (Window *)desktop;
+                                
+                                if(desktop_window->active_child)
+                                    Desktop_remove_window(
+                                        desktop_window, 
+                                        desktop_window->active_child);
+                            }
+                            break;
+                    }
+                    
+                    main_keyboard_callback(
+                        event.key.keysym.sym,
+                        event.key.keysym.mod,
+                        0);
+                    
+                    break;
+                    
+                case SDL_KEYUP:
+                    
+                    main_keyboard_callback(
+                        event.key.keysym.sym,
+                        event.key.keysym.mod,
+                        0);
+                    
+                case SDL_MOUSEBUTTONUP:
+                    if(event.button.button == SDL_BUTTON_LEFT)    
+                        buttonState &= ~(1<<0);
+                    if(event.button.button == SDL_BUTTON_RIGHT)
+                        buttonState &= ~(1<<1);
+                    
+                    SDL_GetMouseState(&mouse_x, &mouse_y);
+                    
+                    main_mouse_callback((uint16_t) mouse_x, (uint16_t) mouse_y, buttonState);
+                    
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    if(event.button.button == SDL_BUTTON_LEFT)    
+                        buttonState |= (1<<0);
+                    if(event.button.button == SDL_BUTTON_RIGHT)
+                        buttonState |= (1<<1);
+                    
+                    SDL_GetMouseState(&mouse_x, &mouse_y);
+                    
+                    main_mouse_callback((uint16_t) mouse_x, (uint16_t) mouse_y, buttonState);
+                    
+                    break;
+                    
+                case SDL_MOUSEMOTION:                
+                    SDL_GetMouseState(&mouse_x, &mouse_y);
+                    
+                    main_mouse_callback((uint16_t) event.motion.x, (uint16_t) event.motion.y, buttonState);
+                    
+                    break;
+            }
         }
-
+        
         SDL_UpdateTexture(texture, NULL, framebuffer, screen_width*sizeof(uint32_t));
-
+        
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, NULL, NULL);
         SDL_RenderPresent(renderer);
     }
-
+    
+    pthread_join(tick_thread, NULL);
+    
     free(desktop);
     free(framebuffer);
 

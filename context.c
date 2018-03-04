@@ -155,6 +155,106 @@ void Context_fill_rect(
     }
 }
 
+void Context_clipped_bitmap(
+    Context *context,
+    int source_x,
+    int source_y,
+    int dest_x,
+    int dest_y,
+    unsigned int width,
+    unsigned int height,
+    Rect *clip_area,
+    unsigned int *source)
+{
+    int cur_dest_x;
+    int cur_source_x;
+    int max_x = dest_x + width;
+    int max_y = dest_y + height;
+
+    dest_x += context->translate_x;
+    dest_y += context->translate_y;
+
+    max_x += context->translate_x;
+    max_y += context->translate_y;
+
+    if(dest_x < clip_area->left)
+    {
+        source_x += clip_area->left - dest_x;
+        dest_x = clip_area->left;
+    }
+
+    if(dest_y < clip_area->top)
+    {
+        source_y += clip_area->top - dest_y;
+        dest_y = clip_area->top;
+    }
+
+    if(max_x > clip_area->right + 1)
+    {
+        max_x = clip_area->right + 1;
+    }
+
+    if(max_y > clip_area->bottom + 1)
+    {
+        max_y = clip_area->bottom + 1;
+    }
+
+    // TODO: Make sure that source_x and source_y is within image and such
+
+
+    for(; dest_y < max_y; ++dest_y, ++source_y)
+    {
+        for(cur_dest_x = dest_x, cur_source_x = source_x; 
+            cur_source_x < max_x; 
+            ++cur_dest_x, ++cur_source_x)
+        {
+            context->buffer[dest_y * context->width + cur_dest_x] = 
+                source[source_y * width + cur_source_x];
+        }
+    }
+}
+
+// TODO: Implement scaling with different source and dest width/height
+void Context_fill_bitmap(
+    Context *context,
+    int source_x, 
+    int source_y,
+    int dest_x,
+    int dest_y,
+    unsigned int width, 
+    unsigned int height, 
+    unsigned int *source)
+{
+    int i;
+
+    Rect *clip_area;
+    Rect screen_area;
+
+    if(context->clip_rects->count)
+    {
+        for(i = 0; i < context->clip_rects->count; ++i)
+        {
+            clip_area = (Rect *)List_get_at(context->clip_rects, i);
+            Context_clipped_bitmap(context, source_x, source_y, dest_x, 
+                                   dest_y, width, height, clip_area, source);
+        }
+    }
+    else
+    {
+        if(!context->clipping_on)
+        {
+            screen_area.top = 0;
+            screen_area.left = 0;
+            screen_area.bottom = context->height - 1;
+            screen_area.right = context->width - 1;
+            Context_clipped_bitmap(context, source_x, source_y, dest_x,
+                                   dest_y, width, height, &screen_area, source);
+        }
+    }
+    
+}
+
+
 void Context_horizontal_line(
     Context *context, 
     int x, 

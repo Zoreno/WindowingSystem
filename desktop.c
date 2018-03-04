@@ -52,6 +52,10 @@
 #include "rect.h"
 #include <time.h>
 #include "context.h"
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <time.h>
+
 
 #define cX 0xFF000000
 #define cO 0xFFFFFFFF
@@ -87,6 +91,7 @@ void Desktop_taskbar_process_mouse(
     uint16_t mouse_x,
     uint16_t mouse_y,
     uint8_t mouse_buttons);
+void Desktop_taskbar_tick_handler(Window *taskbar_window, int ticks);
 
 Desktop *Desktop_new(Context *context)
 {
@@ -135,6 +140,7 @@ Desktop *Desktop_new(Context *context)
 
     desktop->taskbar->paint_function = Desktop_paint_taskbar;
     desktop->taskbar->mousedown_function = Desktop_taskbar_process_mouse;
+    desktop->taskbar->tick_function = Desktop_taskbar_tick_handler;
     
     Window_insert_child((Window *)desktop, desktop->taskbar);
 
@@ -145,7 +151,28 @@ Desktop *Desktop_new(Context *context)
 
     desktop->mouse_x = desktop->window.context->width / 2;
     desktop->mouse_y = desktop->window.context->height / 2;
+
+    SDL_Surface *bg = IMG_Load("background.png");
+
+    if(bg == NULL)
+    {
+        printf("Error loading desktop background\n");
+    }
+
+    desktop->background = (unsigned int *)malloc(sizeof(unsigned int *) * desktop->window.width * desktop->window.height);
     
+    bg = SDL_ConvertSurfaceFormat(bg, SDL_PIXELFORMAT_ARGB8888, 0);
+
+    SDL_LockSurface(bg);
+
+    memcpy(desktop->background, bg->pixels, bg->h * bg->pitch);
+
+    SDL_UnlockSurface(bg);
+
+    SDL_FreeSurface(bg);
+
+    pthread_mutex_init(&desktop->mutex, NULL);
+
     return desktop;
 }
 
@@ -196,6 +223,11 @@ void Desktop_paint_taskbar(Window *taskbar_window)
     int active_child;
     Window *desktop_window = taskbar_window->parent;
 
+    time_t rawtime;
+    struct tm *timeinfo;
+    char time_buf[32];
+    char date_buf[32];
+
     Context_fill_rect(
         desktop_window->context,
         0,
@@ -230,12 +262,84 @@ void Desktop_paint_taskbar(Window *taskbar_window)
         Context_draw_text(
             desktop_window->context, 
             child->title, 
-            40 + (TASKBAR_ICON_WIDTH + 10)*current_index,
+            52 + (TASKBAR_ICON_WIDTH + 10)*current_index,
             9,
             0xFF000000);
 
         ++current_index;
     }
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    sprintf(time_buf, "%02d:%02d:%02d", 
+            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    sprintf(date_buf, "%04d-%02d-%02d", 
+            timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
+    
+    Context_draw_text(
+        desktop_window->context, 
+        time_buf, 
+        desktop_window->width - 80,
+        4,
+        0xFFFFFFFF);
+
+    Context_draw_text(
+        desktop_window->context, 
+        date_buf, 
+        desktop_window->width - 90,
+        20,
+        0xFFFFFFFF);
+}
+
+void Desktop_taskbar_tick_handler(Window *taskbar_window, int ticks)
+{
+    //printf("Taskbar got tick %i\n", ticks);
+
+    taskbar_window->last_tick += ticks;
+
+    if(taskbar_window->last_tick < 500)
+    {
+        return;
+    }
+    
+    taskbar_window->last_tick -= 500;
+
+    Window *desktop_window = taskbar_window->parent;
+
+    time_t rawtime;
+    struct tm *timeinfo;
+    char time_buf[32];
+    char date_buf[32];
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+
+    sprintf(time_buf, "%02d:%02d:%02d", 
+            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+    sprintf(date_buf, "%04d-%02d-%02d", 
+            timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
+    
+    Context_draw_text(
+        desktop_window->context, 
+        time_buf, 
+        desktop_window->width - 80,
+        4,
+        0xFFFFFFFF);
+
+    Context_draw_text(
+        desktop_window->context, 
+        date_buf, 
+        desktop_window->width - 90,
+        20,
+        0xFFFFFFFF);
+
+    Window_invalidate(
+        taskbar_window, 
+        0,
+        taskbar_window->width - 90, 
+        taskbar_window->height - 1, 
+        taskbar_window->width - 1);
 }
 
 void Desktop_process_mouse(
@@ -349,7 +453,7 @@ void Desktop_process_mouse(
     long nanoDiff = (end_time.tv_sec - start_time.tv_sec) * (long)1e9 + 
         (end_time.tv_nsec - start_time.tv_nsec);
 
-    //printf("Painting Desktop took %dns\n", (int)nanoDiff);
+    printf("Painting Desktop took %dns\n", (int)nanoDiff);
 }
 
 void Desktop_invalidate_start_bar(Window *desktop_window)
@@ -366,7 +470,10 @@ void Desktop_invalidate_start_bar(Window *desktop_window)
 
 void Desktop_paint_handler(Window *desktop_window)
 {
+
+    Desktop *desktop = (Desktop *)desktop_window;
     // TODO: Draw bitmap when possible
+/*
     Context_fill_rect(
         desktop_window->context, 
         0, 
@@ -374,6 +481,17 @@ void Desktop_paint_handler(Window *desktop_window)
         desktop_window->context->width,
         desktop_window->context->height, 
         0xFFFF9933); 
+*/
+
+    Context_fill_bitmap(
+        desktop_window->context,
+        0,
+        0,
+        0,
+        0,
+        desktop_window->width,
+        desktop_window->height,
+        desktop->background);
 }
 
 Window *Desktop_create_window(

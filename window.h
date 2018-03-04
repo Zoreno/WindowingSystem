@@ -77,6 +77,7 @@ struct Window_struct;
 typedef void (*WindowPaintHandler)(struct Window_struct *);
 typedef void (*WindowMousedownHandler)(struct Window_struct *, int, int);
 typedef void (*WindowKeyHandler)(struct Window_struct *, int, int, int);
+typedef void (*WindowTickHandler)(struct Window_struct *, int);
 
 typedef struct Window_struct
 {
@@ -92,6 +93,7 @@ typedef struct Window_struct
     Context *context;
     List *children;
     uint8_t last_button_state;
+    int last_tick;
 
     char *title;
 
@@ -120,6 +122,7 @@ typedef struct Window_struct
     WindowPaintHandler paint_function;
     WindowMousedownHandler mousedown_function;
     WindowKeyHandler key_function;
+    WindowTickHandler tick_function;
 
 } Window;
 
@@ -158,6 +161,10 @@ void Window_process_keyboard(
     int key,
     int mods,
     int action);
+
+void Window_process_tick(
+    Window *window,
+    int ticks);
 
 List *Window_get_windows_above(
     Window *parent, 

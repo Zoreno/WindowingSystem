@@ -57,6 +57,7 @@
 void Window_paint_handler(Window *window);
 void Window_mousedown_handler(Window *window, int x, int y);
 void Window_key_handler(Window *window, int key, int mods, int action);
+void Window_tick_handler(Window *window, int ticks);
 
 uint8_t pseudo_rand_8()
 {
@@ -114,6 +115,7 @@ int Window_init(
     window->flags = flags;
     window->context = context;
     window->last_button_state = 0;
+    window->last_tick = 0;
     
     window->title = (char *)0;
     window->index = index;
@@ -130,6 +132,7 @@ int Window_init(
     window->paint_function = Window_paint_handler;
     window->mousedown_function = Window_mousedown_handler;    
     window->key_function = Window_key_handler;
+    window->tick_function = Window_tick_handler;
 
     // Initiate settings
     window->min_width = WIN_DEFAULT_MIN_WIDTH;
@@ -872,6 +875,24 @@ void Window_process_keyboard(
     }
 }
 
+void Window_process_tick(Window *window, int ticks)
+{
+    int i;
+    Window *child;
+
+    for(i = 0; i < window->children->count; ++i)
+    {
+        child = (Window *)List_get_at(window->children, i);
+
+        Window_process_tick(child, ticks);
+    }
+
+    if(window->tick_function)
+    {
+        window->tick_function(window, ticks);
+    }
+}
+
 void Window_mousedown_handler(Window *window, int x, int y)
 {
     return;
@@ -1341,6 +1362,11 @@ int Window_should_close(Window *window)
 void Window_request_close(Window *window)
 {
     window->flags |= WIN_SHOULD_CLOSE;
+}
+
+void Window_tick_handler(Window *window, int ticks)
+{
+    return;
 }
 
 /* "'(file-name-nondirectory (buffer-file-name))'" ends here */
