@@ -58,7 +58,6 @@ void Window_paint_handler(Window *window);
 void Window_mousedown_handler(Window *window, int x, int y);
 void Window_key_handler(Window *window, int key, int mods, int action);
 
-
 uint8_t pseudo_rand_8()
 {
     static uint16_t seed = 0;
@@ -105,23 +104,31 @@ int Window_init(
         return 0;
     }
 
+    window->parent = (Window *)0;
+
     // Initiate state variables
     window->x = x;
     window->y = y;
     window->width = width;
     window->height = height;
-    window->context = context;
     window->flags = flags;
-    window->parent = (Window *)0;
+    window->context = context;
     window->last_button_state = 0;
-    window->paint_function = Window_paint_handler;
-    window->drag_child = (Window *)0;
-    window->active_child = (Window *)0;
-    window->drag_off_x = 0;
-    window->drag_off_y = 0;
-    window->mousedown_function = Window_mousedown_handler;
+    
     window->title = (char *)0;
     window->index = index;
+
+    window->drag_child = (Window *)0;
+    window->active_child = (Window *)0;
+    
+    window->dragging = 0;
+    window->resizing = 0;
+
+    window->drag_off_x = 0;
+    window->drag_off_y = 0;
+
+    window->paint_function = Window_paint_handler;
+    window->mousedown_function = Window_mousedown_handler;    
     window->key_function = Window_key_handler;
 
     // Initiate settings
@@ -131,16 +138,14 @@ int Window_init(
     window->max_height = WIN_DEFAULT_MAX_HEIGHT;
 
 
-    // Check if state is valid
+    // Check if state is valid given the settings
     window->width = window->width > window->min_width ? window->width : window->min_width;
     window->height = window->height > window->min_height ? window->height : window->min_height;
 
     window->width = window->width < window->max_width ? window->width : window->max_width;
     window->height = window->height < window->max_height ? window->height : window->max_height;
 
-    window->dragging = 0;
-    window->resizing = 0;
-    
+
     return 1;
 }
 
@@ -166,6 +171,7 @@ int Window_screen_y(Window *window)
 
 void Window_update_title(Window *window)
 {
+
     int screen_x;
     int screen_y;
 
@@ -248,7 +254,10 @@ void Window_draw_border(Window *window)
 
 }
 
-void Window_apply_bound_clipping(Window *window, int in_recursion, List *dirty_regions)
+void Window_apply_bound_clipping(
+    Window *window, 
+    int in_recursion, 
+    List *dirty_regions)
 {
     Rect *temp_rect;
     Rect *current_dirty_rect;
@@ -356,7 +365,9 @@ void Window_paint(
     List *draw_windows;
 
     if(!window->context)
+    {
         return;
+    }
 
     if(window->flags & WIN_MINIMIZED)
     {
@@ -386,7 +397,8 @@ void Window_paint(
     {
         current_child = (Window *)List_get_at(window->children, i);
 
-        if(current_child->flags & WIN_MINIMIZED)
+        if((current_child->flags & WIN_MINIMIZED) ||
+           (current_child->flags & WIN_FLOATING))
         {
             continue;
         }
@@ -409,7 +421,7 @@ void Window_paint(
     window->context->translate_y = screen_y;
     
     window->paint_function(window);
-    
+
     Context_clear_clip_rects(window->context);
 
     window->context->translate_x = 0;
@@ -417,14 +429,19 @@ void Window_paint(
 
     if(!paint_children)
     {
+        
         return;
     }
 
     if(!(draw_windows = List_new()))
     {
+       
         return;
     }
 
+    /*
+     * Do the first rendering pass with all non-floating windows
+     */
     
     // Construct a new list with all windows in drawing order
     for(current_index = 0; current_index < window->children->count; ++current_index)
@@ -433,7 +450,8 @@ void Window_paint(
         {
             current_child = (Window *)List_get_at(window->children, i);
 
-            if(current_child->index == current_index)
+            if(current_child->index == current_index && 
+               !(current_child->flags & WIN_FLOATING))
             {
                 List_add(draw_windows, current_child);
                 continue;
@@ -479,6 +497,48 @@ void Window_paint(
         List_remove_at(draw_windows, 0);
     }
 
+    /*
+     * Do the second rendering pass with the floating windows
+     */
+
+    for(i = 0; i < window->children->count; ++i)
+    {
+        current_child = (Window *)List_get_at(window->children, i);
+        
+        if(!(current_child->flags & WIN_FLOATING))
+        {
+            continue;
+        }
+
+        if(dirty_regions)
+        {            
+
+            for(j = 0; j < dirty_regions->count; ++j)
+            {
+                
+                temp_rect = (Rect *)List_get_at(dirty_regions, j);
+                
+                screen_x = Window_screen_x(current_child);
+                screen_y = Window_screen_y(current_child);
+                
+                if(temp_rect->left <= (screen_x + current_child->width - 1) && 
+                   temp_rect->right >= screen_x && 
+                   temp_rect->top <= (screen_y + current_child->height - 1) &&
+                   temp_rect->bottom >= screen_y)
+                {
+                    break;
+                }
+            }
+            
+            if(j == dirty_regions->count)
+            {
+                continue;
+            }
+        }
+
+        Window_paint(current_child, dirty_regions, 1);
+    }   
+   
     free(draw_windows);
 }
 
@@ -502,10 +562,16 @@ List *Window_get_windows_above(Window *parent, Window *child)
     if(!(return_list = List_new()))
         return return_list;
 
+/*
     for(i = 0; i < parent->children->count; ++i)
     {
         if(child == (Window *)List_get_at(parent->children, i))
             break;
+    }
+*/
+    if(child->flags & WIN_FLOATING)
+    {
+        return return_list;
     }
 
     for(i = 0; i < parent->children->count; ++i)
@@ -517,7 +583,7 @@ List *Window_get_windows_above(Window *parent, Window *child)
             continue;
         }
 
-        if(current_window->index >= child->index)
+        if(current_window->index >= child->index && !(current_window->flags & WIN_FLOATING))
         {
             continue;
         }
@@ -562,7 +628,7 @@ List *Window_get_windows_below(Window *parent, Window *child)
             continue;
         }
 
-        if(current_window->index <= child->index)
+        if(current_window->index <= child->index || current_window->flags & WIN_FLOATING)
         {
             continue;
         }
@@ -591,36 +657,21 @@ void Window_process_mouse(
     int inner_y1;
     int inner_x2;
     int inner_y2;
-   
+    int window_hit = 0;
 
     Window *current_child;
     Window *child;
 
     List *processing_windows;
 
-    if(!(processing_windows = List_new()))
+    for(i = 0; i < window->children->count; ++i)
     {
-        return;
-    }
+        child = (Window *)List_get_at(window->children, i);
 
-    // Construct a new list with all windows in drawing order
-    for(current_index = 0; current_index < window->children->count; ++current_index)
-    {
-        for(i = 0; i < window->children->count; ++i)
+        if(!(child->flags & WIN_FLOATING))
         {
-            current_child = (Window *)List_get_at(window->children, i);
-
-            if(current_child->index == current_index)
-            {
-                List_add(processing_windows, current_child);
-                continue;
-            }    
+            continue;
         }
-    }
-    
-    for(i = 0; i < processing_windows->count; ++i)
-    {
-        child = (Window *)List_get_at(processing_windows, i);
 
         if(child->flags & WIN_MINIMIZED)
         {
@@ -628,7 +679,7 @@ void Window_process_mouse(
         }
 
         if(!(mouse_x >= child->x && mouse_x < (child->x + child->width) &&
-           mouse_y >= child->y && mouse_y < (child->y + child->height)))
+             mouse_y >= child->y && mouse_y < (child->y + child->height)))
         {
             continue;
         }
@@ -636,7 +687,7 @@ void Window_process_mouse(
         if(mouse_buttons && !window->last_button_state)
         {
             Window_raise(child, 1);
-
+            
             if(!(child->flags & WIN_NODECORATION) &&
                mouse_y >= child->y && mouse_y < (child->y + 31))
             {
@@ -646,6 +697,8 @@ void Window_process_mouse(
                    mouse_y < child->y + 24)
                 {
                     Window_request_close(child);
+                    
+                    window_hit = 1;
                 }
                 else if(!(window->flags & WIN_NO_DRAG))
                 {
@@ -654,10 +707,11 @@ void Window_process_mouse(
                     window->drag_off_y = mouse_y - child->y;
                     window->drag_child = child;
                     
+                    window_hit = 1;
                     break;
                 }
             } 
-
+            
             if(!(child->flags & WIN_NODECORATION ) &&
                !(child->flags & WIN_NO_RESIZE) &&
                mouse_x >= child->x + child->width - 16 &&
@@ -668,15 +722,102 @@ void Window_process_mouse(
                 window->resizing = 1;
                 window->drag_off_x = mouse_x - child->width;
                 window->drag_off_y = mouse_y - child->height;
-
+                
                 window->drag_child = child;
+
+                window_hit = 1;
+                break;
             }
         }
 
         Window_process_mouse(child, mouse_x - child->x, mouse_y - child->y, mouse_buttons);
+        window_hit = 1;
         break;
     }
 
+    if(!(processing_windows = List_new()))
+    {
+        return;
+    }
+    
+    if(!window_hit)
+    {
+        
+        // Construct a new list with all windows in drawing order
+        for(current_index = 0; current_index < window->children->count; ++current_index)
+        {
+            for(i = 0; i < window->children->count; ++i)
+            {
+                current_child = (Window *)List_get_at(window->children, i);
+                
+                if(current_child->index == current_index)
+                {
+                    List_add(processing_windows, current_child);
+                    continue;
+                }    
+            }
+        }
+        
+        for(i = 0; i < processing_windows->count; ++i)
+        {
+            child = (Window *)List_get_at(processing_windows, i);
+            
+            if(child->flags & WIN_MINIMIZED)
+            {
+                continue;
+            }
+            
+            if(!(mouse_x >= child->x && mouse_x < (child->x + child->width) &&
+                 mouse_y >= child->y && mouse_y < (child->y + child->height)))
+            {
+                continue;
+            }
+            
+            if(mouse_buttons && !window->last_button_state)
+            {
+                Window_raise(child, 1);
+                
+                if(!(child->flags & WIN_NODECORATION) &&
+                   mouse_y >= child->y && mouse_y < (child->y + 31))
+                {
+                    if(mouse_x >= child->x + child->width - 24 && 
+                       mouse_x < child->x + child->width - 8 &&
+                       mouse_y >= child->y + 8 &&
+                       mouse_y < child->y + 24)
+                    {
+                        Window_request_close(child);
+                    }
+                    else if(!(window->flags & WIN_NO_DRAG))
+                    {
+                        window->dragging = 1;
+                        window->drag_off_x = mouse_x - child->x;
+                        window->drag_off_y = mouse_y - child->y;
+                        window->drag_child = child;
+                        
+                        break;
+                    }
+                } 
+                
+                if(!(child->flags & WIN_NODECORATION ) &&
+                   !(child->flags & WIN_NO_RESIZE) &&
+                   mouse_x >= child->x + child->width - 16 &&
+                   mouse_x < child->x + child->width &&
+                   mouse_y >= child->y + child->height - 16 && 
+                   mouse_y < child->y + child->height)
+                {
+                    window->resizing = 1;
+                    window->drag_off_x = mouse_x - child->width;
+                    window->drag_off_y = mouse_y - child->height;
+                    
+                    window->drag_child = child;
+                }
+            }
+            
+            Window_process_mouse(child, mouse_x - child->x, mouse_y - child->y, mouse_buttons);
+            break;
+        }
+    }
+    
     if(!mouse_buttons)
     {
         window->dragging = 0;
@@ -835,9 +976,14 @@ void Window_raise(Window *window, uint8_t do_draw)
         Window_update_title(last_active);
     }
 
+    if(window->flags & WIN_NODECORATION)
+    {
+        return;
+    }
+
     Desktop_invalidate_start_bar(parent);
 
-    Window_paint(parent, (List *)0, 1);
+    //Window_paint(parent, (List *)0, 1);
 }
 
 void Window_move(Window *window, int new_x, int new_y)
@@ -898,7 +1044,6 @@ void Window_move(Window *window, int new_x, int new_y)
     free(dirty_windows);
 
     Window_paint(window, (List *)0, 1);
-
 }
 
 void Window_resize(Window *window, int new_width, int new_height)
@@ -1025,7 +1170,6 @@ void Window_invalidate(Window *window, int top, int left, int bottom, int right)
 void Window_set_title(Window *window, char *new_title)
 {
     int len;
-    int i;
 
     // A realloc might be useful here...
     // libc has a realloc but libk might not.
@@ -1060,8 +1204,7 @@ void Window_append_title(Window *window, char *add_c)
     char *new_string;
     int orig_len;
     int add_len;
-    int i;
-    
+
     if(!window->title)
     {
         Window_set_title(window, add_c);

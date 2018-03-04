@@ -78,6 +78,16 @@ unsigned int mouse_img[MOUSE_BUFSZ] = {
     c_, c_, c_, c_, c_, c_, c_, cX, cX, c_, c_ 
 };
 
+#define TASKBAR_HEIGHT 32
+#define TASKBAR_ICON_WIDTH 128
+
+void Desktop_paint_taskbar(Window *taskbar_window);
+void Desktop_taskbar_process_mouse(
+    Window *taskbar_window, 
+    uint16_t mouse_x,
+    uint16_t mouse_y,
+    uint8_t mouse_buttons);
+
 Desktop *Desktop_new(Context *context)
 {
     Desktop *desktop;
@@ -103,6 +113,31 @@ Desktop *Desktop_new(Context *context)
 
     desktop->window.parent = (Window *)0;
 
+    if(!(desktop->taskbar = (Window *)malloc(sizeof(Window))))
+    {
+        free(desktop);
+        return (Desktop *)0;
+    }
+
+    if(!Window_init(
+           desktop->taskbar,
+           0,
+           desktop->window.height - TASKBAR_HEIGHT,
+           desktop->window.width,
+           TASKBAR_HEIGHT,
+           WIN_NODECORATION | WIN_NO_RESIZE | WIN_NO_DRAG | WIN_FLOATING,
+           context,
+           0))
+    {
+        free(desktop);
+        return (Desktop *)0;
+    }
+
+    desktop->taskbar->paint_function = Desktop_paint_taskbar;
+    desktop->taskbar->mousedown_function = Desktop_taskbar_process_mouse;
+    
+    Window_insert_child((Window *)desktop, desktop->taskbar);
+
     desktop->window.paint_function = Desktop_paint_handler;
     desktop->window.key_function = (WindowKeyHandler)0;
 
@@ -110,8 +145,97 @@ Desktop *Desktop_new(Context *context)
 
     desktop->mouse_x = desktop->window.context->width / 2;
     desktop->mouse_y = desktop->window.context->height / 2;
-
+    
     return desktop;
+}
+
+void Desktop_taskbar_process_mouse(
+    Window *taskbar_window, 
+    uint16_t mouse_x,
+    uint16_t mouse_y,
+    uint8_t mouse_buttons)
+{
+    int i;
+    Window *desktop_window = taskbar_window->parent;
+    Window *child;
+    int current_index = 0;
+
+    if(taskbar_window->last_button_state != mouse_buttons) 
+    {
+
+        for(i = 0; i < desktop_window->children->count; ++i)
+        {
+            child = (Window *)List_get_at(desktop_window->children, i);
+
+            if(child->flags & WIN_FLOATING)
+            {
+                continue;
+            }
+
+            if(mouse_x > (48 + (TASKBAR_ICON_WIDTH + 10) * current_index) && 
+               mouse_x <= (48 + (TASKBAR_ICON_WIDTH + 10) * current_index + TASKBAR_ICON_WIDTH) &&
+               mouse_y > 6 && 
+               mouse_y <= 26)
+            {
+                Window_raise(child, 1);
+                break;
+            }
+
+            ++current_index;
+        }
+    }
+
+    taskbar_window->last_button_state = mouse_buttons;
+}
+
+void Desktop_paint_taskbar(Window *taskbar_window)
+{
+    int i;
+    int current_index = 0;
+    Window *child;
+    int active_child;
+    Window *desktop_window = taskbar_window->parent;
+
+    Context_fill_rect(
+        desktop_window->context,
+        0,
+        0,
+        taskbar_window->width,
+        taskbar_window->height,
+        0xFF101010);
+
+    for(i = 0; i < desktop_window->children->count; ++i)
+    {
+        child = (Window *)List_get_at(desktop_window->children, i);
+
+        if(child->flags & WIN_FLOATING)
+        {
+            continue;
+        }
+
+        active_child = desktop_window->active_child && (desktop_window->active_child == child);
+
+        Context_fill_rect(
+            desktop_window->context,
+            48 + (TASKBAR_ICON_WIDTH + 10)*current_index,
+            6,
+            TASKBAR_ICON_WIDTH,
+            20,
+            active_child ? 0xFFFFFFFF : 0xFF8F8F8F);
+
+        char string[32];
+
+        //sprintf(string, "%s", child->title);
+        
+        Context_draw_text(
+            desktop_window->context, 
+            child->title, 
+            40 + (TASKBAR_ICON_WIDTH + 10)*current_index,
+            9,
+            0xFF000000);
+
+        ++current_index;
+    }
 }
 
 void Desktop_process_mouse(
@@ -134,7 +258,6 @@ void Desktop_process_mouse(
     Rect *mouse_rect;
 
     List *pending_remove;
-
 
     /*
      * Start time measurement
@@ -174,9 +297,11 @@ void Desktop_process_mouse(
         return;
     }
 
-    if(!(mouse_rect = Rect_new(desktop->mouse_y, desktop->mouse_x,
-                               desktop->mouse_y + MOUSE_HEIGHT - 1,
-                               desktop->mouse_x + MOUSE_WIDTH - 1)))
+    if(!(mouse_rect = Rect_new(
+             desktop->mouse_y, 
+             desktop->mouse_x,
+             desktop->mouse_y + MOUSE_HEIGHT - 1,
+             desktop->mouse_x + MOUSE_WIDTH - 1)))
     {
         free(dirty_list);
         return;
@@ -216,7 +341,6 @@ void Desktop_process_mouse(
         }
     }
 
-
     /*
      * Get the time after updating
      */
@@ -225,60 +349,19 @@ void Desktop_process_mouse(
     long nanoDiff = (end_time.tv_sec - start_time.tv_sec) * (long)1e9 + 
         (end_time.tv_nsec - start_time.tv_nsec);
 
-    printf("Painting Desktop took %dns\n", (int)nanoDiff);
+    //printf("Painting Desktop took %dns\n", (int)nanoDiff);
 }
-
-#define START_BAR_HEIGHT 32
-#define START_BAR_ICON_WIDTH 64
 
 void Desktop_invalidate_start_bar(Window *desktop_window)
 {
+    Desktop *desktop = (Desktop *)desktop_window;
+
     Window_invalidate(
         desktop_window, 
-        0,
-        desktop_window->height - START_BAR_HEIGHT,
-        desktop_window->width,
-        desktop_window->height);
-}
-
-void Desktop_draw_start_bar(Window *desktop_window)
-{
-    int i;
-    Window *child;
-    int active_child;
-    
-    Context_fill_rect(
-        desktop_window->context,
-        0,
-        desktop_window->height - START_BAR_HEIGHT,
-        desktop_window->width,
-        START_BAR_HEIGHT,
-        0xFF101010);
-
-    for(i = 0; i < desktop_window->children->count; ++i)
-    {
-        child = (Window *)List_get_at(desktop_window->children, i);
-
-        active_child = desktop_window->active_child && (desktop_window->active_child == child);
-
-        Context_fill_rect(
-            desktop_window->context,
-            32 + (START_BAR_ICON_WIDTH + 10)*i,
-            desktop_window->height - 32 + 6,
-            START_BAR_ICON_WIDTH,
-            20,
-            active_child ? 0xFFFFFFFF : 0xFF4F4F4F);
-
-        char *string[32];
-
-        sprintf(string, "%d", child->index);
-        
-        Context_draw_text(
-            desktop_window->context, 
-            string, 
-            40 + (START_BAR_ICON_WIDTH + 10)*i,
-            desktop_window->height - 32 + 6, 0xFFFF0000);
-    }
+        desktop->taskbar->y,
+        desktop->taskbar->x,
+        desktop->taskbar->y + desktop->taskbar->height,
+        desktop->taskbar->x + desktop->taskbar->width);
 }
 
 void Desktop_paint_handler(Window *desktop_window)
@@ -290,9 +373,7 @@ void Desktop_paint_handler(Window *desktop_window)
         0, 
         desktop_window->context->width,
         desktop_window->context->height, 
-        0xFFFF9933);
-
-    Desktop_draw_start_bar(desktop_window);  
+        0xFFFF9933); 
 }
 
 Window *Desktop_create_window(

@@ -112,6 +112,7 @@ Create a pipe or socket to communicate to external programs.
 #include "desktop.h"
 #include "window.h"
 #include "button.h"
+#include <pthread.h>
 
 Desktop *desktop;
 
@@ -134,6 +135,11 @@ int main(int argc, char **argv)
     uint32_t *framebuffer = NULL;
 
     int buttonState = 0;
+
+    int cascade_index_x = 0;
+    int cascade_index_y = 0;
+
+    Context *context;
 
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -164,7 +170,7 @@ int main(int argc, char **argv)
 
     memset(framebuffer, 0, screen_width * screen_height * sizeof(uint32_t));
 
-    Context *context = Context_new(0,0,0);
+    context = Context_new(0,0,0);
 
     context->buffer = framebuffer;
     context->width = screen_width;
@@ -209,13 +215,8 @@ int main(int argc, char **argv)
 
     Window_paint((Window *)desktop, (List *)0, 1);
 
-    int cascade_index_x = 0;
-    int cascade_index_y = 0;
-
     while(!quit)
     {
-        SDL_UpdateTexture(texture, NULL, framebuffer, screen_width*sizeof(uint32_t));
-
         SDL_WaitEvent(&event);
 
         int mouse_x;
@@ -312,6 +313,8 @@ int main(int argc, char **argv)
                 
                 break;
         }
+
+        SDL_UpdateTexture(texture, NULL, framebuffer, screen_width*sizeof(uint32_t));
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, texture, NULL, NULL);

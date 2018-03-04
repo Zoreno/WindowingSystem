@@ -60,6 +60,8 @@ typedef struct Desktop_struct
     Window window;
     uint16_t mouse_x;
     uint16_t mouse_y;
+
+    Window *taskbar;
 } Desktop;
 
 Desktop *Desktop_new(Context *context);
