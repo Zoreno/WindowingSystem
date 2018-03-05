@@ -51,6 +51,7 @@ TODO List:
 Primary goals:
 
 Window icon
+Window Maximize 
 
 Additional flags
  - Focused
@@ -83,20 +84,33 @@ Simple controls
 
 Simple Applications
  - Calculator
- - Command line parser
+ - Command line parser/terminal
+ - File explorer
+ - Control Panel
+ - Calendar
+ - Text editor
 
 Secondary goals:
 
 Multiple themes
+Change background
 
 Multiple fonts
  - Get advance and height and such from fonts
+ - Read proper font files / FreeType library
 
 Start Menu
 
 Create a pipe or socket to communicate to external programs. 
  - Syscall-like syntax is preferred to emulate OS environment.
 
+Native bitmap/PNG support
+
+Basic Control Panel
+ - Change Theme
+ - Change Background
+ - Change time format
+ - Change default font
 
  */
 
@@ -110,6 +124,7 @@ Create a pipe or socket to communicate to external programs.
 #include "desktop.h"
 #include "window.h"
 #include "button.h"
+#include "textbox.h"
 #include <pthread.h>
 
 Desktop *desktop;
@@ -238,6 +253,10 @@ int main(int argc, char **argv)
     Button *button2 = Button_new(307, 257, 80, 30);
     Window_insert_child(window, (Window *)button2);
     Window_set_title((Window *)button2, "Button2");
+
+    TextBox *textbox = TextBox_new(16, 48, 200, 30);
+    Window_insert_child(window, (Window *)textbox);
+    Window_set_title((Window *)textbox, "Enter text");
 
     Window_paint((Window *)desktop, (List *)0, 1);
 

@@ -960,6 +960,11 @@ void Window_raise(Window *window, uint8_t do_draw)
         return;
     }
 
+    if(window->flags & WIN_FLOATING)
+    {
+        return;
+    }
+
     parent = window->parent;
 
     if(parent->active_child && parent->active_child == window)
@@ -1285,6 +1290,9 @@ void Window_minimize(Window *window)
 
     // TODO: Find another window to raise by picking random or create
     // a list of newly used windows.
+
+    window->parent->active_child = 0;
+    Desktop_invalidate_start_bar(window->parent);
 }
 
 void Window_restore(Window *window)

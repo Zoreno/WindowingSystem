@@ -204,7 +204,22 @@ void Desktop_taskbar_process_mouse(
                mouse_y > 6 && 
                mouse_y <= 26)
             {
-                Window_raise(child, 1);
+
+                if(child == desktop_window->active_child)
+                {
+                    Window_minimize(child);
+                }
+                else
+                {
+                    if(Window_minimized(child))
+                    {
+                        Window_restore(child);
+                    }
+                    else
+                    {
+                        Window_raise(child, 1);
+                    }
+                }
                 break;
             }
 
@@ -453,7 +468,7 @@ void Desktop_process_mouse(
     long nanoDiff = (end_time.tv_sec - start_time.tv_sec) * (long)1e9 + 
         (end_time.tv_nsec - start_time.tv_nsec);
 
-    printf("Painting Desktop took %dns\n", (int)nanoDiff);
+    //printf("Painting Desktop took %dns\n", (int)nanoDiff);
 }
 
 void Desktop_invalidate_start_bar(Window *desktop_window)
