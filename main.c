@@ -50,18 +50,19 @@ TODO List:
 
 Primary goals:
 
-Window icon
-Window Maximize 
+ - Window icon
+ - Window Maximize
+ - Fix sizing problem. Now you can reduce the size of the window to the point
+that you cannot grab the resize rectangle again. This can be fixed by setting 
+max and min allowable size for windows but each type must have its own size.
+ - Separate horizontal and vertical resize.
 
 Additional flags
- - Focused
+ - None at the moment
 
 Quality of life size/dimension accessors
  - Vectors
  - Bounding rect
- - Aspect ratio
-
-Render bitmaps
 
 Window Events
  - Key
@@ -92,19 +93,31 @@ Simple Applications
 
 Secondary goals:
 
-Multiple themes
-Change background
-
-Multiple fonts
- - Get advance and height and such from fonts
- - Read proper font files / FreeType library
+Change appearance as desired.
+ - User profile
+   - Login screen
+   - Name of user
+   - Personalized Icon
+   - Save user themes and settings on disk.
+ - Multiple themes
+   - Change color of handles and maybe color gradients to spice up things.
+   - Change appearance on each window type.
+ - Change background
+   - Have an interface to change from a the control panel.
+ - Multiple fonts
+   - Get advance and height and such from fonts
+   - Read proper font files / FreeType library. Would be nice to have arial and
+comic sans.
 
 Start Menu
+ - Launch programs (Open proper window)
 
 Create a pipe or socket to communicate to external programs. 
  - Syscall-like syntax is preferred to emulate OS environment.
 
 Native bitmap/PNG support
+ - Right now bitmap loading is done by SDL, which is not available in an OS
+environment.
 
 Basic Control Panel
  - Change Theme
@@ -206,7 +219,8 @@ int main(int argc, char **argv)
 
     SDL_ShowCursor(SDL_DISABLE);
    
-    // TODO: Better allocator than malloc
+    // TODO: Better allocator than malloc. Not very important since the frame buffer
+    // is provided by the OS.
     framebuffer = malloc(sizeof(uint32_t) * screen_width * screen_height);
 
     memset(framebuffer, 0, screen_width * screen_height * sizeof(uint32_t));
@@ -274,6 +288,8 @@ int main(int argc, char **argv)
             
         int mouse_x;
         int mouse_y;
+
+        Window *desktop_window = (Window *)desktop;
         
         if(got_event)
         {
@@ -287,12 +303,32 @@ int main(int argc, char **argv)
                     switch(event.key.keysym.sym)
                     {
                         case SDLK_e:
-                            Window_minimize(window);
+                            if(desktop_window->active_child)
+                            {
+                                Window_minimize(desktop_window->active_child);
+                            }
                             break;
                         case SDLK_r:
-                            Window_restore(window);
+                            if(desktop_window->active_child)
+                            {
+                                Window_restore(desktop_window->active_child);
+                            }
+                            break;
+                        case SDLK_f:
+                            if(desktop_window->active_child)
+                            {
+                                Window_maximize(desktop_window->active_child);
+                            }
+                            break;
+                        case SDLK_g:
+                            if(desktop_window->active_child)
+                            {
+                                Window_unmaximize(desktop_window->active_child);
+                            }
                             break;
                         case SDLK_n:
+                            // TODO: Create DONT_CARE variables and move cascade
+                            // logic into the Window_create_window.
                             Desktop_create_window(
                                 (Window *)desktop, 
                                 10 + 16*cascade_index_x, 

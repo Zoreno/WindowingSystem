@@ -66,6 +66,7 @@
 #define WIN_NO_DRAG 0x8
 #define WIN_NO_RESIZE 0x10
 #define WIN_FLOATING 0x20
+#define WIN_MAXIMIZED 0x40
 
 #define WIN_DEFAULT_MIN_WIDTH 72
 #define WIN_DEFAULT_MIN_HEIGHT 16
@@ -81,6 +82,8 @@ typedef void (*WindowTickHandler)(struct Window_struct *, int);
 
 typedef struct Window_struct
 {
+    // This window's parent
+
     struct Window_struct *parent;
 
     // Window state
@@ -89,6 +92,8 @@ typedef struct Window_struct
     int16_t y;
     uint16_t width;
     uint16_t height;
+    uint16_t inner_width; // The width of the inner renderable area.
+    uint16_t inner_height; // The height of the inner renderable area.
     uint16_t flags;
     Context *context;
     List *children;
@@ -98,6 +103,11 @@ typedef struct Window_struct
     char *title;
 
     uint32_t index;
+
+    int16_t last_x; // For returning from maximized state.
+    int16_t last_y; // For returning from maximized state.
+    uint16_t last_width; // For returning from maximized state.
+    uint16_t last_height; // For returning from maximized state.
 
     // Settings
 
@@ -233,6 +243,18 @@ int Window_should_close(
     Window *window);
 
 void Window_request_close(
+    Window *window);
+
+int Window_is_focused(
+    Window *window);
+
+float Window_get_aspect_ratio(
+    Window *window);
+
+void Window_maximize(
+    Window *window);
+
+void Window_unmaximize(
     Window *window);
 
 #endif // _WINDOW_H_

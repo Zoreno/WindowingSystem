@@ -137,7 +137,7 @@ Desktop *Desktop_new(Context *context)
         free(desktop);
         return (Desktop *)0;
     }
-
+    desktop->window.inner_height = desktop->window.height - TASKBAR_HEIGHT;
     desktop->taskbar->paint_function = Desktop_paint_taskbar;
     desktop->taskbar->mousedown_function = Desktop_taskbar_process_mouse;
     desktop->taskbar->tick_function = Desktop_taskbar_tick_handler;

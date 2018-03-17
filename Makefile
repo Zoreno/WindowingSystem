@@ -4,8 +4,8 @@
 # @file
 # @version 0.1
 
-CFLAGS := -g -Wall -Wextra -Wpedantic
-LDFLAGS := -g -lSDL2 -lSDL2_image -lpthread
+CFLAGS := -pg -Wall -Wextra -Wpedantic
+LDFLAGS := -pg -lSDL2 -lSDL2_image -lpthread
 
 all: main list listnode context desktop rect window button textbox
 	gcc *.o $(LDFLAGS) -o sdltest
@@ -42,6 +42,9 @@ run: all
 
 run-debug: all
 	sudo ddd ./sdltest --gdb -command=dddcmd
+
+run-profile: all
+	sudo gprof ./sdltest gmon.out > prof_output
 
 clean:
 	rm -f *.o

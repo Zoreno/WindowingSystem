@@ -1,0 +1,672 @@
+Flat profile:
+
+Each sample counts as 0.01 seconds.
+  %   cumulative   self              self     total           
+ time   seconds   seconds    calls  us/call  us/call  name    
+ 50.02      0.01     0.01     8478     1.18     1.18  Context_clipped_rect
+ 50.02      0.02     0.01      351    28.50    28.50  Context_clipped_bitmap
+  0.00      0.02     0.00    51764     0.00     0.00  List_get_at
+  0.00      0.02     0.00     8899     0.00     1.12  Context_fill_rect
+  0.00      0.02     0.00     8295     0.00     0.00  ListNode_new
+  0.00      0.02     0.00     8295     0.00     0.00  List_add
+  0.00      0.02     0.00     8295     0.00     0.00  List_remove_at
+  0.00      0.02     0.00     8201     0.00     0.00  Rect_new
+  0.00      0.02     0.00     7491     0.00     0.00  Window_screen_x
+  0.00      0.02     0.00     7491     0.00     0.00  Window_screen_y
+  0.00      0.02     0.00     7137     0.00     0.00  Context_draw_char
+  0.00      0.02     0.00     6854     0.00     0.00  Context_draw_char_clipped
+  0.00      0.02     0.00     6198     0.00     0.00  List_new
+  0.00      0.02     0.00     4362     0.00     1.12  Context_horizontal_line
+  0.00      0.02     0.00     3198     0.00     0.00  Context_subtract_clip_rect
+  0.00      0.02     0.00     3006     0.00     1.12  Context_vertical_line
+  0.00      0.02     0.00     2194     0.00     0.00  Rect_intersect
+  0.00      0.02     0.00     2093     0.00     0.00  Context_intersect_clip_rect
+  0.00      0.02     0.00     1503     0.00     4.50  Context_draw_rect
+  0.00      0.02     0.00     1215     0.00     0.00  Context_add_clip_rect
+  0.00      0.02     0.00     1164     0.00     0.00  Context_draw_text
+  0.00      0.02     0.00     1144     0.00     0.00  Window_apply_bound_clipping
+  0.00      0.02     0.00     1099     0.00     0.00  Context_clear_clip_rects
+  0.00      0.02     0.00     1024     0.00     0.00  Window_tick_handler
+  0.00      0.02     0.00      671     0.00    29.56  Window_paint
+  0.00      0.02     0.00      655     0.00     0.00  Window_get_windows_above
+  0.00      0.02     0.00      548     0.00    18.25  Context_fill_bitmap
+  0.00      0.02     0.00      548     0.00    18.25  Desktop_paint_handler
+  0.00      0.02     0.00      535     0.00     0.00  Rect_split
+  0.00      0.02     0.00      478     0.00    39.94  Desktop_process_mouse
+  0.00      0.02     0.00      478     0.00     9.70  Window_process_mouse
+  0.00      0.02     0.00      477     0.00    40.03  main_mouse_callback
+  0.00      0.02     0.00      452     0.00    19.11  Window_draw_border
+  0.00      0.02     0.00      443     0.00     1.12  Window_paint_handler
+  0.00      0.02     0.00      187     0.00     2.85  Desktop_taskbar_tick_handler
+  0.00      0.02     0.00      187     0.00     2.85  Window_process_tick
+  0.00      0.02     0.00       57     0.00    11.45  Window_raise
+  0.00      0.02     0.00       45     0.00     0.00  Window_get_windows_below
+  0.00      0.02     0.00       45     0.00   100.78  Window_move
+  0.00      0.02     0.00       44     0.00    14.61  Button_paint
+  0.00      0.02     0.00       41     0.00    29.56  Window_invalidate
+  0.00      0.02     0.00       40     0.00     3.51  Desktop_paint_taskbar
+  0.00      0.02     0.00       16     0.00     0.00  Window_mousedown_handler
+  0.00      0.02     0.00       15     0.00    29.56  Desktop_invalidate_start_bar
+  0.00      0.02     0.00       15     0.00     5.62  TextBox_paint
+  0.00      0.02     0.00       10     0.00    17.20  Window_update_title
+  0.00      0.02     0.00        8     0.00     0.00  Window_init
+  0.00      0.02     0.00        6     0.00    23.38  Window_set_title
+  0.00      0.02     0.00        4     0.00     0.00  Window_insert_child
+  0.00      0.02     0.00        4     0.00     0.00  Window_update_context
+  0.00      0.02     0.00        3     0.00    93.95  Desktop_create_window
+  0.00      0.02     0.00        3     0.00   108.39  Desktop_remove_window
+  0.00      0.02     0.00        3     0.00    11.45  Window_create_window
+  0.00      0.02     0.00        3     0.00     0.00  Window_new
+  0.00      0.02     0.00        3     0.00    49.27  Window_remove
+  0.00      0.02     0.00        3     0.00     0.00  Window_request_close
+  0.00      0.02     0.00        2     0.00     0.00  Button_new
+  0.00      0.02     0.00        1     0.00     0.00  Context_new
+  0.00      0.02     0.00        1     0.00     0.00  Desktop_new
+  0.00      0.02     0.00        1     0.00     0.00  TextBox_new
+
+ %         the percentage of the total running time of the
+time       program used by this function.
+
+cumulative a running sum of the number of seconds accounted
+ seconds   for by this function and those listed above it.
+
+ self      the number of seconds accounted for by this
+seconds    function alone.  This is the major sort for this
+           listing.
+
+calls      the number of times this function was invoked, if
+           this function is profiled, else blank.
+
+ self      the average number of milliseconds spent in this
+ms/call    function per call, if this function is profiled,
+	   else blank.
+
+ total     the average number of milliseconds spent in this
+ms/call    function and its descendents per call, if this
+	   function is profiled, else blank.
+
+name       the name of the function.  This is the minor sort
+           for this listing. The index shows the location of
+	   the function in the gprof listing. If the index is
+	   in parenthesis it shows where it would appear in
+	   the gprof listing if it were to be printed.
+
+Copyright (C) 2012-2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+		     Call graph (explanation follows)
+
+
+granularity: each sample hit covers 2 byte(s) for 49.98% of 0.02 seconds
+
+index % time    self  children    called     name
+                                 419             Window_paint [1]
+                0.00    0.00       1/671         main [2]
+                0.00    0.00       3/671         Desktop_create_window [25]
+                0.00    0.00       3/671         Desktop_remove_window [24]
+                0.00    0.00       9/671         Window_raise [17]
+                0.00    0.00      41/671         Window_invalidate [16]
+                0.00    0.00     136/671         Window_move [14]
+                0.00    0.01     478/671         Desktop_process_mouse [3]
+[1]     99.1    0.00    0.02     671+419     Window_paint [1]
+                0.00    0.01     548/548         Desktop_paint_handler [8]
+                0.00    0.01     443/452         Window_draw_border [10]
+                0.00    0.00      44/44          Button_paint [18]
+                0.00    0.00     443/443         Window_paint_handler [22]
+                0.00    0.00      40/40          Desktop_paint_taskbar [28]
+                0.00    0.00      15/15          TextBox_paint [30]
+                0.00    0.00   15621/51764       List_get_at [32]
+                0.00    0.00    4977/7491        Window_screen_x [37]
+                0.00    0.00    4977/7491        Window_screen_y [38]
+                0.00    0.00    2204/8201        Rect_new [36]
+                0.00    0.00    1761/3198        Context_subtract_clip_rect [42]
+                0.00    0.00    1626/8295        List_add [34]
+                0.00    0.00    1626/8295        List_remove_at [35]
+                0.00    0.00    1090/1144        Window_apply_bound_clipping [47]
+                0.00    0.00    1090/1099        Context_clear_clip_rects [48]
+                0.00    0.00    1045/6198        List_new [41]
+                0.00    0.00     443/2093        Context_intersect_clip_rect [44]
+                                 419             Window_paint [1]
+-----------------------------------------------
+                                                 <spontaneous>
+[2]     97.3    0.00    0.02                 main [2]
+                0.00    0.02     477/477         main_mouse_callback [4]
+                0.00    0.00       3/3           Desktop_create_window [25]
+                0.00    0.00       3/6           Window_set_title [29]
+                0.00    0.00       1/671         Window_paint [1]
+                0.00    0.00       3/4           Window_insert_child [55]
+                0.00    0.00       2/2           Button_new [59]
+                0.00    0.00       1/1           Context_new [60]
+                0.00    0.00       1/1           Desktop_new [61]
+                0.00    0.00       1/1           TextBox_new [62]
+-----------------------------------------------
+                0.00    0.02     478/478         main_mouse_callback [4]
+[3]     95.4    0.00    0.02     478         Desktop_process_mouse [3]
+                0.00    0.01     478/671         Window_paint [1]
+                0.00    0.00     478/478         Window_process_mouse [13]
+                0.00    0.00       3/3           Desktop_remove_window [24]
+                0.00    0.00    1590/51764       List_get_at [32]
+                0.00    0.00     956/6198        List_new [41]
+                0.00    0.00     481/8295        List_add [34]
+                0.00    0.00     481/8295        List_remove_at [35]
+                0.00    0.00     478/8201        Rect_new [36]
+-----------------------------------------------
+                0.00    0.02     477/477         main [2]
+[4]     95.4    0.00    0.02     477         main_mouse_callback [4]
+                0.00    0.02     478/478         Desktop_process_mouse [3]
+-----------------------------------------------
+                0.00    0.00      15/8899        TextBox_paint [30]
+                0.00    0.00      44/8899        Button_paint [18]
+                0.00    0.00     125/8899        Desktop_paint_taskbar [28]
+                0.00    0.00     443/8899        Window_paint_handler [22]
+                0.00    0.00     904/8899        Window_draw_border [10]
+                0.00    0.00    3006/8899        Context_vertical_line [15]
+                0.00    0.00    4362/8899        Context_horizontal_line [12]
+[5]     50.0    0.00    0.01    8899         Context_fill_rect [5]
+                0.01    0.00    8478/8478        Context_clipped_rect [6]
+                0.00    0.00    8478/51764       List_get_at [32]
+-----------------------------------------------
+                0.01    0.00    8478/8478        Context_fill_rect [5]
+[6]     50.0    0.01    0.00    8478         Context_clipped_rect [6]
+-----------------------------------------------
+                0.00    0.01     548/548         Desktop_paint_handler [8]
+[7]     50.0    0.00    0.01     548         Context_fill_bitmap [7]
+                0.01    0.00     351/351         Context_clipped_bitmap [9]
+                0.00    0.00     351/51764       List_get_at [32]
+-----------------------------------------------
+                0.00    0.01     548/548         Window_paint [1]
+[8]     50.0    0.00    0.01     548         Desktop_paint_handler [8]
+                0.00    0.01     548/548         Context_fill_bitmap [7]
+-----------------------------------------------
+                0.01    0.00     351/351         Context_fill_bitmap [7]
+[9]     50.0    0.01    0.00     351         Context_clipped_bitmap [9]
+-----------------------------------------------
+                0.00    0.00       9/452         Window_update_title [26]
+                0.00    0.01     443/452         Window_paint [1]
+[10]    43.2    0.00    0.01     452         Window_draw_border [10]
+                0.00    0.01    1356/1503        Context_draw_rect [11]
+                0.00    0.00    1356/4362        Context_horizontal_line [12]
+                0.00    0.00     904/8899        Context_fill_rect [5]
+                0.00    0.00     904/1164        Context_draw_text [46]
+                0.00    0.00     452/7491        Window_screen_x [37]
+                0.00    0.00     452/7491        Window_screen_y [38]
+-----------------------------------------------
+                0.00    0.00      15/1503        TextBox_paint [30]
+                0.00    0.00     132/1503        Button_paint [18]
+                0.00    0.01    1356/1503        Window_draw_border [10]
+[11]    33.8    0.00    0.01    1503         Context_draw_rect [11]
+                0.00    0.00    3006/4362        Context_horizontal_line [12]
+                0.00    0.00    3006/3006        Context_vertical_line [15]
+-----------------------------------------------
+                0.00    0.00    1356/4362        Window_draw_border [10]
+                0.00    0.00    3006/4362        Context_draw_rect [11]
+[12]    24.5    0.00    0.00    4362         Context_horizontal_line [12]
+                0.00    0.00    4362/8899        Context_fill_rect [5]
+-----------------------------------------------
+                                 296             Window_process_mouse [13]
+                0.00    0.00     478/478         Desktop_process_mouse [3]
+[13]    23.2    0.00    0.00     478+296     Window_process_mouse [13]
+                0.00    0.00      45/45          Window_move [14]
+                0.00    0.00       9/57          Window_raise [17]
+                0.00    0.00    9641/51764       List_get_at [32]
+                0.00    0.00    1860/8295        List_add [34]
+                0.00    0.00    1860/8295        List_remove_at [35]
+                0.00    0.00     774/6198        List_new [41]
+                0.00    0.00      16/16          Window_mousedown_handler [53]
+                0.00    0.00       3/3           Window_request_close [58]
+                                 296             Window_process_mouse [13]
+-----------------------------------------------
+                0.00    0.00      45/45          Window_process_mouse [13]
+[14]    22.7    0.00    0.00      45         Window_move [14]
+                0.00    0.00     136/671         Window_paint [1]
+                0.00    0.00      45/57          Window_raise [17]
+                0.00    0.00     110/8295        List_remove_at [35]
+                0.00    0.00      45/1144        Window_apply_bound_clipping [47]
+                0.00    0.00      45/7491        Window_screen_y [38]
+                0.00    0.00      45/7491        Window_screen_x [37]
+                0.00    0.00      45/3198        Context_subtract_clip_rect [42]
+                0.00    0.00      45/6198        List_new [41]
+                0.00    0.00      45/45          Window_get_windows_below [52]
+-----------------------------------------------
+                0.00    0.00    3006/3006        Context_draw_rect [11]
+[15]    16.9    0.00    0.00    3006         Context_vertical_line [15]
+                0.00    0.00    3006/8899        Context_fill_rect [5]
+-----------------------------------------------
+                0.00    0.00       3/41          Window_set_title [29]
+                0.00    0.00       5/41          Window_remove [27]
+                0.00    0.00      15/41          Desktop_invalidate_start_bar [23]
+                0.00    0.00      18/41          Desktop_taskbar_tick_handler [19]
+[16]     6.1    0.00    0.00      41         Window_invalidate [16]
+                0.00    0.00      41/671         Window_paint [1]
+                0.00    0.00      41/7491        Window_screen_x [37]
+                0.00    0.00      41/7491        Window_screen_y [38]
+                0.00    0.00      41/6198        List_new [41]
+                0.00    0.00      41/8201        Rect_new [36]
+                0.00    0.00      41/8295        List_add [34]
+                0.00    0.00      41/8295        List_remove_at [35]
+-----------------------------------------------
+                0.00    0.00       3/57          Window_create_window [31]
+                0.00    0.00       9/57          Window_process_mouse [13]
+                0.00    0.00      45/57          Window_move [14]
+[17]     3.3    0.00    0.00      57         Window_raise [17]
+                0.00    0.00       9/671         Window_paint [1]
+                0.00    0.00       9/15          Desktop_invalidate_start_bar [23]
+                0.00    0.00       7/10          Window_update_title [26]
+                0.00    0.00      30/51764       List_get_at [32]
+-----------------------------------------------
+                0.00    0.00      44/44          Window_paint [1]
+[18]     3.2    0.00    0.00      44         Button_paint [18]
+                0.00    0.00     132/1503        Context_draw_rect [11]
+                0.00    0.00      44/8899        Context_fill_rect [5]
+                0.00    0.00      44/1164        Context_draw_text [46]
+-----------------------------------------------
+                0.00    0.00     187/187         Window_process_tick [20]
+[19]     2.7    0.00    0.00     187         Desktop_taskbar_tick_handler [19]
+                0.00    0.00      18/41          Window_invalidate [16]
+                0.00    0.00      36/1164        Context_draw_text [46]
+-----------------------------------------------
+                                1024             Window_process_tick [20]
+                0.00    0.00     187/187         tick_thread_func [21]
+[20]     2.7    0.00    0.00     187+1024    Window_process_tick [20]
+                0.00    0.00     187/187         Desktop_taskbar_tick_handler [19]
+                0.00    0.00    1024/51764       List_get_at [32]
+                0.00    0.00    1024/1024        Window_tick_handler [49]
+                                1024             Window_process_tick [20]
+-----------------------------------------------
+                                                 <spontaneous>
+[21]     2.7    0.00    0.00                 tick_thread_func [21]
+                0.00    0.00     187/187         Window_process_tick [20]
+-----------------------------------------------
+                0.00    0.00     443/443         Window_paint [1]
+[22]     2.5    0.00    0.00     443         Window_paint_handler [22]
+                0.00    0.00     443/8899        Context_fill_rect [5]
+-----------------------------------------------
+                0.00    0.00       3/15          Desktop_create_window [25]
+                0.00    0.00       3/15          Desktop_remove_window [24]
+                0.00    0.00       9/15          Window_raise [17]
+[23]     2.2    0.00    0.00      15         Desktop_invalidate_start_bar [23]
+                0.00    0.00      15/41          Window_invalidate [16]
+-----------------------------------------------
+                0.00    0.00       3/3           Desktop_process_mouse [3]
+[24]     1.6    0.00    0.00       3         Desktop_remove_window [24]
+                0.00    0.00       3/3           Window_remove [27]
+                0.00    0.00       3/15          Desktop_invalidate_start_bar [23]
+                0.00    0.00       3/671         Window_paint [1]
+                0.00    0.00       9/51764       List_get_at [32]
+-----------------------------------------------
+                0.00    0.00       3/3           main [2]
+[25]     1.4    0.00    0.00       3         Desktop_create_window [25]
+                0.00    0.00       3/15          Desktop_invalidate_start_bar [23]
+                0.00    0.00       3/671         Window_paint [1]
+                0.00    0.00       3/6           Window_set_title [29]
+                0.00    0.00       3/3           Window_create_window [31]
+-----------------------------------------------
+                0.00    0.00       3/10          Window_set_title [29]
+                0.00    0.00       7/10          Window_raise [17]
+[26]     0.9    0.00    0.00      10         Window_update_title [26]
+                0.00    0.00       9/452         Window_draw_border [10]
+                0.00    0.00       9/1144        Window_apply_bound_clipping [47]
+                0.00    0.00       9/1099        Context_clear_clip_rects [48]
+-----------------------------------------------
+                                   2             Window_remove [27]
+                0.00    0.00       3/3           Desktop_remove_window [24]
+[27]     0.7    0.00    0.00       3+2       Window_remove [27]
+                0.00    0.00       5/41          Window_invalidate [16]
+                0.00    0.00      10/51764       List_get_at [32]
+                0.00    0.00       7/8295        List_remove_at [35]
+                                   2             Window_remove [27]
+-----------------------------------------------
+                0.00    0.00      40/40          Window_paint [1]
+[28]     0.7    0.00    0.00      40         Desktop_paint_taskbar [28]
+                0.00    0.00     125/8899        Context_fill_rect [5]
+                0.00    0.00     165/1164        Context_draw_text [46]
+                0.00    0.00     125/51764       List_get_at [32]
+-----------------------------------------------
+                0.00    0.00       3/6           Desktop_create_window [25]
+                0.00    0.00       3/6           main [2]
+[29]     0.7    0.00    0.00       6         Window_set_title [29]
+                0.00    0.00       3/41          Window_invalidate [16]
+                0.00    0.00       3/10          Window_update_title [26]
+-----------------------------------------------
+                0.00    0.00      15/15          Window_paint [1]
+[30]     0.4    0.00    0.00      15         TextBox_paint [30]
+                0.00    0.00      15/1503        Context_draw_rect [11]
+                0.00    0.00      15/8899        Context_fill_rect [5]
+                0.00    0.00      15/1164        Context_draw_text [46]
+-----------------------------------------------
+                0.00    0.00       3/3           Desktop_create_window [25]
+[31]     0.2    0.00    0.00       3         Window_create_window [31]
+                0.00    0.00       3/57          Window_raise [17]
+                0.00    0.00       3/3           Window_new [57]
+                0.00    0.00       3/8295        List_add [34]
+-----------------------------------------------
+                0.00    0.00       9/51764       Desktop_remove_window [24]
+                0.00    0.00      10/51764       Window_remove [27]
+                0.00    0.00      30/51764       Window_raise [17]
+                0.00    0.00     125/51764       Desktop_paint_taskbar [28]
+                0.00    0.00     351/51764       Context_fill_bitmap [7]
+                0.00    0.00     358/51764       Window_get_windows_below [52]
+                0.00    0.00    1024/51764       Window_process_tick [20]
+                0.00    0.00    1066/51764       Window_apply_bound_clipping [47]
+                0.00    0.00    1590/51764       Desktop_process_mouse [3]
+                0.00    0.00    2194/51764       Context_intersect_clip_rect [44]
+                0.00    0.00    2314/51764       Window_get_windows_above [50]
+                0.00    0.00    2423/51764       Context_subtract_clip_rect [42]
+                0.00    0.00    6530/51764       Context_draw_char [39]
+                0.00    0.00    8478/51764       Context_fill_rect [5]
+                0.00    0.00    9641/51764       Window_process_mouse [13]
+                0.00    0.00   15621/51764       Window_paint [1]
+[32]     0.0    0.00    0.00   51764         List_get_at [32]
+-----------------------------------------------
+                0.00    0.00    8295/8295        List_add [34]
+[33]     0.0    0.00    0.00    8295         ListNode_new [33]
+-----------------------------------------------
+                0.00    0.00       3/8295        Window_create_window [31]
+                0.00    0.00       4/8295        Window_insert_child [55]
+                0.00    0.00      41/8295        Window_invalidate [16]
+                0.00    0.00      46/8295        Window_get_windows_below [52]
+                0.00    0.00     177/8295        Window_get_windows_above [50]
+                0.00    0.00     406/8295        Context_subtract_clip_rect [42]
+                0.00    0.00     406/8295        Rect_split [51]
+                0.00    0.00     481/8295        Desktop_process_mouse [3]
+                0.00    0.00    1215/8295        Context_add_clip_rect [45]
+                0.00    0.00    1626/8295        Window_paint [1]
+                0.00    0.00    1860/8295        Window_process_mouse [13]
+                0.00    0.00    2030/8295        Context_intersect_clip_rect [44]
+[34]     0.0    0.00    0.00    8295         List_add [34]
+                0.00    0.00    8295/8295        ListNode_new [33]
+-----------------------------------------------
+                0.00    0.00       7/8295        Window_remove [27]
+                0.00    0.00      41/8295        Window_invalidate [16]
+                0.00    0.00     110/8295        Window_move [14]
+                0.00    0.00     177/8295        Window_apply_bound_clipping [47]
+                0.00    0.00     481/8295        Desktop_process_mouse [3]
+                0.00    0.00     858/8295        Context_clear_clip_rects [48]
+                0.00    0.00     941/8295        Context_subtract_clip_rect [42]
+                0.00    0.00    1626/8295        Window_paint [1]
+                0.00    0.00    1860/8295        Window_process_mouse [13]
+                0.00    0.00    2194/8295        Context_intersect_clip_rect [44]
+[35]     0.0    0.00    0.00    8295         List_remove_at [35]
+-----------------------------------------------
+                0.00    0.00      41/8201        Window_invalidate [16]
+                0.00    0.00     406/8201        Rect_split [51]
+                0.00    0.00     478/8201        Desktop_process_mouse [3]
+                0.00    0.00    2030/8201        Rect_intersect [43]
+                0.00    0.00    2204/8201        Window_paint [1]
+                0.00    0.00    3042/8201        Window_apply_bound_clipping [47]
+[36]     0.0    0.00    0.00    8201         Rect_new [36]
+-----------------------------------------------
+                                6862             Window_screen_x [37]
+                0.00    0.00      41/7491        Window_invalidate [16]
+                0.00    0.00      45/7491        Window_move [14]
+                0.00    0.00     452/7491        Window_draw_border [10]
+                0.00    0.00    1976/7491        Window_apply_bound_clipping [47]
+                0.00    0.00    4977/7491        Window_paint [1]
+[37]     0.0    0.00    0.00    7491+6862    Window_screen_x [37]
+                                6862             Window_screen_x [37]
+-----------------------------------------------
+                                6862             Window_screen_y [38]
+                0.00    0.00      41/7491        Window_invalidate [16]
+                0.00    0.00      45/7491        Window_move [14]
+                0.00    0.00     452/7491        Window_draw_border [10]
+                0.00    0.00    1976/7491        Window_apply_bound_clipping [47]
+                0.00    0.00    4977/7491        Window_paint [1]
+[38]     0.0    0.00    0.00    7491+6862    Window_screen_y [38]
+                                6862             Window_screen_y [38]
+-----------------------------------------------
+                0.00    0.00    7137/7137        Context_draw_text [46]
+[39]     0.0    0.00    0.00    7137         Context_draw_char [39]
+                0.00    0.00    6854/6854        Context_draw_char_clipped [40]
+                0.00    0.00    6530/51764       List_get_at [32]
+-----------------------------------------------
+                0.00    0.00    6854/6854        Context_draw_char [39]
+[40]     0.0    0.00    0.00    6854         Context_draw_char_clipped [40]
+-----------------------------------------------
+                0.00    0.00       1/6198        Context_new [60]
+                0.00    0.00       8/6198        Window_init [54]
+                0.00    0.00      41/6198        Window_invalidate [16]
+                0.00    0.00      45/6198        Window_get_windows_below [52]
+                0.00    0.00      45/6198        Window_move [14]
+                0.00    0.00     535/6198        Rect_split [51]
+                0.00    0.00     655/6198        Window_get_windows_above [50]
+                0.00    0.00     774/6198        Window_process_mouse [13]
+                0.00    0.00     956/6198        Desktop_process_mouse [3]
+                0.00    0.00    1045/6198        Window_paint [1]
+                0.00    0.00    2093/6198        Context_intersect_clip_rect [44]
+[41]     0.0    0.00    0.00    6198         List_new [41]
+-----------------------------------------------
+                0.00    0.00      45/3198        Window_move [14]
+                0.00    0.00     177/3198        Window_apply_bound_clipping [47]
+                0.00    0.00    1215/3198        Context_add_clip_rect [45]
+                0.00    0.00    1761/3198        Window_paint [1]
+[42]     0.0    0.00    0.00    3198         Context_subtract_clip_rect [42]
+                0.00    0.00    2423/51764       List_get_at [32]
+                0.00    0.00     941/8295        List_remove_at [35]
+                0.00    0.00     535/535         Rect_split [51]
+                0.00    0.00     406/8295        List_add [34]
+-----------------------------------------------
+                0.00    0.00    2194/2194        Context_intersect_clip_rect [44]
+[43]     0.0    0.00    0.00    2194         Rect_intersect [43]
+                0.00    0.00    2030/8201        Rect_new [36]
+-----------------------------------------------
+                0.00    0.00     443/2093        Window_paint [1]
+                0.00    0.00    1650/2093        Window_apply_bound_clipping [47]
+[44]     0.0    0.00    0.00    2093         Context_intersect_clip_rect [44]
+                0.00    0.00    2194/51764       List_get_at [32]
+                0.00    0.00    2194/2194        Rect_intersect [43]
+                0.00    0.00    2194/8295        List_remove_at [35]
+                0.00    0.00    2093/6198        List_new [41]
+                0.00    0.00    2030/8295        List_add [34]
+-----------------------------------------------
+                0.00    0.00    1215/1215        Window_apply_bound_clipping [47]
+[45]     0.0    0.00    0.00    1215         Context_add_clip_rect [45]
+                0.00    0.00    1215/3198        Context_subtract_clip_rect [42]
+                0.00    0.00    1215/8295        List_add [34]
+-----------------------------------------------
+                0.00    0.00      15/1164        TextBox_paint [30]
+                0.00    0.00      36/1164        Desktop_taskbar_tick_handler [19]
+                0.00    0.00      44/1164        Button_paint [18]
+                0.00    0.00     165/1164        Desktop_paint_taskbar [28]
+                0.00    0.00     904/1164        Window_draw_border [10]
+[46]     0.0    0.00    0.00    1164         Context_draw_text [46]
+                0.00    0.00    7137/7137        Context_draw_char [39]
+-----------------------------------------------
+                                 655             Window_apply_bound_clipping [47]
+                0.00    0.00       9/1144        Window_update_title [26]
+                0.00    0.00      45/1144        Window_move [14]
+                0.00    0.00    1090/1144        Window_paint [1]
+[47]     0.0    0.00    0.00    1144+655     Window_apply_bound_clipping [47]
+                0.00    0.00    3042/8201        Rect_new [36]
+                0.00    0.00    1976/7491        Window_screen_x [37]
+                0.00    0.00    1976/7491        Window_screen_y [38]
+                0.00    0.00    1650/2093        Context_intersect_clip_rect [44]
+                0.00    0.00    1215/1215        Context_add_clip_rect [45]
+                0.00    0.00    1066/51764       List_get_at [32]
+                0.00    0.00     655/655         Window_get_windows_above [50]
+                0.00    0.00     177/8295        List_remove_at [35]
+                0.00    0.00     177/3198        Context_subtract_clip_rect [42]
+                                 655             Window_apply_bound_clipping [47]
+-----------------------------------------------
+                0.00    0.00       9/1099        Window_update_title [26]
+                0.00    0.00    1090/1099        Window_paint [1]
+[48]     0.0    0.00    0.00    1099         Context_clear_clip_rects [48]
+                0.00    0.00     858/8295        List_remove_at [35]
+-----------------------------------------------
+                0.00    0.00    1024/1024        Window_process_tick [20]
+[49]     0.0    0.00    0.00    1024         Window_tick_handler [49]
+-----------------------------------------------
+                0.00    0.00     655/655         Window_apply_bound_clipping [47]
+[50]     0.0    0.00    0.00     655         Window_get_windows_above [50]
+                0.00    0.00    2314/51764       List_get_at [32]
+                0.00    0.00     655/6198        List_new [41]
+                0.00    0.00     177/8295        List_add [34]
+-----------------------------------------------
+                0.00    0.00     535/535         Context_subtract_clip_rect [42]
+[51]     0.0    0.00    0.00     535         Rect_split [51]
+                0.00    0.00     535/6198        List_new [41]
+                0.00    0.00     406/8201        Rect_new [36]
+                0.00    0.00     406/8295        List_add [34]
+-----------------------------------------------
+                0.00    0.00      45/45          Window_move [14]
+[52]     0.0    0.00    0.00      45         Window_get_windows_below [52]
+                0.00    0.00     358/51764       List_get_at [32]
+                0.00    0.00      46/8295        List_add [34]
+                0.00    0.00      45/6198        List_new [41]
+-----------------------------------------------
+                0.00    0.00      16/16          Window_process_mouse [13]
+[53]     0.0    0.00    0.00      16         Window_mousedown_handler [53]
+-----------------------------------------------
+                0.00    0.00       1/8           TextBox_new [62]
+                0.00    0.00       2/8           Button_new [59]
+                0.00    0.00       2/8           Desktop_new [61]
+                0.00    0.00       3/8           Window_new [57]
+[54]     0.0    0.00    0.00       8         Window_init [54]
+                0.00    0.00       8/6198        List_new [41]
+-----------------------------------------------
+                0.00    0.00       1/4           Desktop_new [61]
+                0.00    0.00       3/4           main [2]
+[55]     0.0    0.00    0.00       4         Window_insert_child [55]
+                0.00    0.00       4/8295        List_add [34]
+                0.00    0.00       4/4           Window_update_context [56]
+-----------------------------------------------
+                0.00    0.00       4/4           Window_insert_child [55]
+[56]     0.0    0.00    0.00       4         Window_update_context [56]
+-----------------------------------------------
+                0.00    0.00       3/3           Window_create_window [31]
+[57]     0.0    0.00    0.00       3         Window_new [57]
+                0.00    0.00       3/8           Window_init [54]
+-----------------------------------------------
+                0.00    0.00       3/3           Window_process_mouse [13]
+[58]     0.0    0.00    0.00       3         Window_request_close [58]
+-----------------------------------------------
+                0.00    0.00       2/2           main [2]
+[59]     0.0    0.00    0.00       2         Button_new [59]
+                0.00    0.00       2/8           Window_init [54]
+-----------------------------------------------
+                0.00    0.00       1/1           main [2]
+[60]     0.0    0.00    0.00       1         Context_new [60]
+                0.00    0.00       1/6198        List_new [41]
+-----------------------------------------------
+                0.00    0.00       1/1           main [2]
+[61]     0.0    0.00    0.00       1         Desktop_new [61]
+                0.00    0.00       2/8           Window_init [54]
+                0.00    0.00       1/4           Window_insert_child [55]
+-----------------------------------------------
+                0.00    0.00       1/1           main [2]
+[62]     0.0    0.00    0.00       1         TextBox_new [62]
+                0.00    0.00       1/8           Window_init [54]
+-----------------------------------------------
+
+ This table describes the call tree of the program, and was sorted by
+ the total amount of time spent in each function and its children.
+
+ Each entry in this table consists of several lines.  The line with the
+ index number at the left hand margin lists the current function.
+ The lines above it list the functions that called this function,
+ and the lines below it list the functions this one called.
+ This line lists:
+     index	A unique number given to each element of the table.
+		Index numbers are sorted numerically.
+		The index number is printed next to every function name so
+		it is easier to look up where the function is in the table.
+
+     % time	This is the percentage of the `total' time that was spent
+		in this function and its children.  Note that due to
+		different viewpoints, functions excluded by options, etc,
+		these numbers will NOT add up to 100%.
+
+     self	This is the total amount of time spent in this function.
+
+     children	This is the total amount of time propagated into this
+		function by its children.
+
+     called	This is the number of times the function was called.
+		If the function called itself recursively, the number
+		only includes non-recursive calls, and is followed by
+		a `+' and the number of recursive calls.
+
+     name	The name of the current function.  The index number is
+		printed after it.  If the function is a member of a
+		cycle, the cycle number is printed between the
+		function's name and the index number.
+
+
+ For the function's parents, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the function into this parent.
+
+     children	This is the amount of time that was propagated from
+		the function's children into this parent.
+
+     called	This is the number of times this parent called the
+		function `/' the total number of times the function
+		was called.  Recursive calls to the function are not
+		included in the number after the `/'.
+
+     name	This is the name of the parent.  The parent's index
+		number is printed after it.  If the parent is a
+		member of a cycle, the cycle number is printed between
+		the name and the index number.
+
+ If the parents of the function cannot be determined, the word
+ `<spontaneous>' is printed in the `name' field, and all the other
+ fields are blank.
+
+ For the function's children, the fields have the following meanings:
+
+     self	This is the amount of time that was propagated directly
+		from the child into the function.
+
+     children	This is the amount of time that was propagated from the
+		child's children to the function.
+
+     called	This is the number of times the function called
+		this child `/' the total number of times the child
+		was called.  Recursive calls by the child are not
+		listed in the number after the `/'.
+
+     name	This is the name of the child.  The child's index
+		number is printed after it.  If the child is a
+		member of a cycle, the cycle number is printed
+		between the name and the index number.
+
+ If there are any cycles (circles) in the call graph, there is an
+ entry for the cycle-as-a-whole.  This entry shows who called the
+ cycle (as parents) and the members of the cycle (as children.)
+ The `+' recursive calls entry shows the number of function calls that
+ were internal to the cycle, and the calls entry for each member shows,
+ for that member, how many times it was called from other members of
+ the cycle.
+
+Copyright (C) 2012-2015 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+
+Index by function name
+
+  [59] Button_new              [8] Desktop_paint_handler  [54] Window_init
+  [18] Button_paint           [28] Desktop_paint_taskbar  [55] Window_insert_child
+  [45] Context_add_clip_rect   [3] Desktop_process_mouse  [16] Window_invalidate
+  [48] Context_clear_clip_rects [24] Desktop_remove_window [53] Window_mousedown_handler
+   [9] Context_clipped_bitmap [19] Desktop_taskbar_tick_handler [14] Window_move
+   [6] Context_clipped_rect   [33] ListNode_new           [57] Window_new
+  [39] Context_draw_char      [34] List_add                [1] Window_paint
+  [40] Context_draw_char_clipped [32] List_get_at         [22] Window_paint_handler
+  [11] Context_draw_rect      [41] List_new               [13] Window_process_mouse
+  [46] Context_draw_text      [35] List_remove_at         [20] Window_process_tick
+   [7] Context_fill_bitmap    [43] Rect_intersect         [17] Window_raise
+   [5] Context_fill_rect      [36] Rect_new               [27] Window_remove
+  [12] Context_horizontal_line [51] Rect_split            [58] Window_request_close
+  [44] Context_intersect_clip_rect [62] TextBox_new       [37] Window_screen_x
+  [60] Context_new            [30] TextBox_paint          [38] Window_screen_y
+  [42] Context_subtract_clip_rect [47] Window_apply_bound_clipping [29] Window_set_title
+  [15] Context_vertical_line  [31] Window_create_window   [49] Window_tick_handler
+  [25] Desktop_create_window  [10] Window_draw_border     [56] Window_update_context
+  [23] Desktop_invalidate_start_bar [50] Window_get_windows_above [26] Window_update_title
+  [61] Desktop_new            [52] Window_get_windows_below [4] main_mouse_callback

@@ -59,6 +59,9 @@ void Window_mousedown_handler(Window *window, int x, int y);
 void Window_key_handler(Window *window, int key, int mods, int action);
 void Window_tick_handler(Window *window, int ticks);
 
+/*
+  A quick way to generate a random 8 bit number
+ */
 uint8_t pseudo_rand_8()
 {
     static uint16_t seed = 0;
@@ -75,11 +78,14 @@ Window *Window_new(
     uint32_t index)
 {
     Window *window;
+
+    // Allocate memory for the new window struct
     if(!(window = (Window *)malloc(sizeof(Window))))
     {
         return window;
     }
-
+    
+    // Initialize the window struct
     if(!Window_init(window, x, y, width, height, flags, context, index))
     {
         free(window);
@@ -87,6 +93,8 @@ Window *Window_new(
         return (Window *)0;
     }
 
+
+    // Return the window.
     return window;
 }
 
@@ -100,11 +108,14 @@ int Window_init(
     Context *context,
     uint32_t index)
 {
+    // Initialize the list of children and return if it does not work
     if(!(window->children = List_new()))
     {
         return 0;
     }
 
+    // Initiate parent to zero. This will be linked later if the
+    // window has a parent.
     window->parent = (Window *)0;
 
     // Initiate state variables
@@ -112,6 +123,18 @@ int Window_init(
     window->y = y;
     window->width = width;
     window->height = height;
+
+    if(flags & WIN_NODECORATION)
+    {
+        window->inner_width = width;
+        window->inner_height = height;
+    }
+    else
+    {
+        window->inner_width = width - 2*WIN_BORDERWIDTH;
+        window->inner_height = height - WIN_TITLEHEIGHT - 2*WIN_BORDERWIDTH;
+    }
+    
     window->flags = flags;
     window->context = context;
     window->last_button_state = 0;
@@ -129,6 +152,7 @@ int Window_init(
     window->drag_off_x = 0;
     window->drag_off_y = 0;
 
+    // Initiate the standard window handling functions.
     window->paint_function = Window_paint_handler;
     window->mousedown_function = Window_mousedown_handler;    
     window->key_function = Window_key_handler;
@@ -140,14 +164,13 @@ int Window_init(
     window->max_width = WIN_DEFAULT_MAX_WIDTH;
     window->max_height = WIN_DEFAULT_MAX_HEIGHT;
 
-
+    // TODO: Use a MAX/MIN/CLAMP macro
     // Check if state is valid given the settings
     window->width = window->width > window->min_width ? window->width : window->min_width;
     window->height = window->height > window->min_height ? window->height : window->min_height;
 
     window->width = window->width < window->max_width ? window->width : window->max_width;
     window->height = window->height < window->max_height ? window->height : window->max_height;
-
 
     return 1;
 }
@@ -178,16 +201,20 @@ void Window_update_title(Window *window)
     int screen_x;
     int screen_y;
 
+    // Make sure that we have a context.
+    // A redraw may be triggered before we have initialized the context.
     if(!window->context)
     {
         return;
     }
-
+    
+    // If the window is minimized, the window title should not be redrawn
     if(window->flags & WIN_MINIMIZED)
     {
         return;
     }
 
+    // If the window does not have a title, it should not be rendered.
     if(window->flags & WIN_NODECORATION)
     {
         return;
@@ -195,6 +222,7 @@ void Window_update_title(Window *window)
 
     Window_apply_bound_clipping(window, 0, (List *)0);
 
+    // Redraw the border
     Window_draw_border(window);
 
     Context_clear_clip_rects(window->context);
@@ -203,6 +231,7 @@ void Window_update_title(Window *window)
 
 void Window_draw_border(Window *window)
 {
+    // Make sure that the position is relative to the full window.
     int screen_x = Window_screen_x(window);
     int screen_y = Window_screen_y(window);
 
@@ -233,6 +262,7 @@ void Window_draw_border(Window *window)
         25, 
         window->parent->active_child == window ? WIN_TITLECOLOR : WIN_TITLECOLOR_INACTIVE);
 
+    // Render the window title.
     Context_draw_text(
         window->context,
         window->title,
@@ -240,6 +270,7 @@ void Window_draw_border(Window *window)
         screen_y + 10,
         window->parent->active_child == window ? WIN_TEXTCOLOR : WIN_TEXTCOLOR_INACTIVE);
 
+    // Render the 'close window' button.
     Context_fill_rect(
         window->context,
         screen_x + window->width - 24,
@@ -248,6 +279,7 @@ void Window_draw_border(Window *window)
         16,
         0xFFFF0000);
 
+    // Render the text on the 'close window' button.
     Context_draw_text(
         window->context,
         "x",
@@ -274,9 +306,12 @@ void Window_apply_bound_clipping(
     if(!window->context)
         return;
 
+    // Get the position relative to the screen.
     screen_x = Window_screen_x(window);
     screen_y = Window_screen_y(window);
 
+    // Get the rect which represents the window rendering area.
+    // We must account for the header bar.
     if((!(window->flags & WIN_NODECORATION)) && in_recursion)
     {
         screen_x += WIN_BORDERWIDTH;
@@ -319,12 +354,16 @@ void Window_apply_bound_clipping(
         return;
     }
 
+
+    // Apply bound clipping for the parent
     Window_apply_bound_clipping(window->parent, 1, dirty_regions);
 
     Context_intersect_clip_rect(window->context, temp_rect);
 
+    // Get the clip of all the windows above this window.
     clip_windows = Window_get_windows_above(window->parent, window);
     
+    // Remove all clip rectangles that intersects the current window rectangle.
     while(clip_windows->count)
     {
         clipping_window = (Window *)List_remove_at(clip_windows, 0);
@@ -347,7 +386,6 @@ void Window_apply_bound_clipping(
     }
 
     free(clip_windows);
-
 }
 
 void Window_paint(
@@ -547,6 +585,8 @@ void Window_paint(
 
 void Window_paint_handler(Window *window)
 {
+
+    // Just fill in the background
     Context_fill_rect(
         window->context, 
         0, 
@@ -565,13 +605,6 @@ List *Window_get_windows_above(Window *parent, Window *child)
     if(!(return_list = List_new()))
         return return_list;
 
-/*
-    for(i = 0; i < parent->children->count; ++i)
-    {
-        if(child == (Window *)List_get_at(parent->children, i))
-            break;
-    }
-*/
     if(child->flags & WIN_FLOATING)
     {
         return return_list;
@@ -1023,6 +1056,11 @@ void Window_move(Window *window, int new_x, int new_y)
     List *dirty_list;
     List *dirty_windows;
 
+    if(window->flags & WIN_NO_DRAG || window->flags & WIN_MAXIMIZED)
+    {
+        return;
+    }
+
     Window_raise(window, 0);
 
     Window_apply_bound_clipping(window, 0, (List *)0);
@@ -1074,6 +1112,20 @@ void Window_move(Window *window, int new_x, int new_y)
 
 void Window_resize(Window *window, int new_width, int new_height)
 {
+    int i;
+    int old_width = window->width;
+    int old_height = window->height;
+    
+    Rect new_window_rect;
+    List *replacement_list;
+    List *dirty_list;
+    List *dirty_windows;
+
+    if(window->flags & WIN_NO_RESIZE || window->flags & WIN_MAXIMIZED)
+    {
+        return;
+    }
+
     // Make sure that constraints of the window is held
     if(new_width < window->min_width)
     {
@@ -1095,16 +1147,6 @@ void Window_resize(Window *window, int new_width, int new_height)
         new_height = window->max_height;
     }
     
-    printf("New Width: %i, New Height: %i\n", new_width, new_height);
-    int i;
-    int old_width = window->width;
-    int old_height = window->height;
-    
-    Rect new_window_rect;
-    List *replacement_list;
-    List *dirty_list;
-    List *dirty_windows;
-
     Window_raise(window, 0);
     
     Window_apply_bound_clipping(window, 0, (List *)0);
@@ -1135,6 +1177,17 @@ void Window_resize(Window *window, int new_width, int new_height)
 
     window->width = new_width;
     window->height = new_height;
+
+    if(window->flags & WIN_NODECORATION)
+    {
+        window->inner_width = new_width;
+        window->inner_height = new_height;
+    }
+    else
+    {
+        window->inner_width = new_width - 2*WIN_BORDERWIDTH;
+        window->inner_height = new_height - WIN_TITLEHEIGHT - 2*WIN_BORDERWIDTH;
+    }
     
     while(dirty_windows->count)
     {
@@ -1374,7 +1427,84 @@ void Window_request_close(Window *window)
 
 void Window_tick_handler(Window *window, int ticks)
 {
+    // Mark parameters as unused to avoid warnings.
+    (void)window;
+    (void)ticks;
     return;
 }
 
-/* "'(file-name-nondirectory (buffer-file-name))'" ends here */
+
+int Window_is_focused(Window *window)
+{
+    if(!(window->parent))
+    {
+        return 0;
+    }
+
+    return window->parent->active_child == window;
+}
+
+float Window_get_aspect_ratio(Window *window)
+{
+    return (float)window->width / (float)window->height;
+}
+
+void Window_maximize(Window *window)
+{
+    int parent_width;
+    int parent_height;
+    
+    // If we are not a child window, maximize does not make sense.
+    if(!window->parent)
+    {
+        return;
+    }
+
+    // If the window is already maximized, we just have to return.
+    if(window->flags & WIN_MAXIMIZED)
+    {
+        return;
+    }
+
+    // Store the current window size and position so we can restore it
+    // later.
+    window->last_x = window->x;
+    window->last_y = window->y;
+    window->last_width = window->width;
+    window->last_height = window->height;
+
+    parent_width = window->parent->inner_width;
+    parent_height = window->parent->inner_height;
+
+    // TODO: Use separate functions to avoid triggering repaint after each call.
+    Window_move(window, 0, 0);
+    Window_resize(window, parent_width, parent_height);
+
+    window->flags |= WIN_MAXIMIZED;
+
+    Desktop_invalidate_start_bar(window->parent);
+    
+    // TODO: Call onWindowMaximized here.
+}
+
+void Window_unmaximize(Window *window)
+{
+    // If we do not have a parent, return
+    if(!window->parent)
+    {
+        return;
+    }
+
+    // If we are not maximized, we cannot do anything useful.
+    if(!(window->flags & WIN_MAXIMIZED))
+    {
+        return;
+    }
+    
+    window->flags &= ~(WIN_MAXIMIZED);
+
+    Window_move(window, window->last_x, window->last_y);
+    Window_resize(window, window->last_width, window->last_height);
+}
+
+/* window.c ends here */
