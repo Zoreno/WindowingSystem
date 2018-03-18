@@ -287,6 +287,40 @@ void Window_draw_border(Window *window)
         screen_y + 8,
         0xFF000000);
 
+    // Render the 'Maximize' button.
+    Context_fill_rect(
+        window->context,
+        screen_x + window->width - 48,
+        screen_y + 8,
+        16,
+        16,
+        WIN_BGCOLOR);
+
+    // Render the text on the 'Minimize' button.
+    Context_draw_text(
+        window->context,
+        window->flags & WIN_MAXIMIZED ? "m" : "M",
+        screen_x + window->width - 44,
+        screen_y + 10,
+        0xFF000000);
+
+    // Render the 'Minimize' button.
+    Context_fill_rect(
+        window->context,
+        screen_x + window->width - 72,
+        screen_y + 8,
+        16,
+        16,
+        WIN_BGCOLOR);
+
+    // Render the text on the 'Minimize' button.
+    Context_draw_text(
+        window->context,
+        "_",
+        screen_x + window->width - 68,
+        screen_y + 10,
+        0xFF000000);
+
 }
 
 void Window_apply_bound_clipping(
@@ -727,6 +761,7 @@ void Window_process_mouse(
             if(!(child->flags & WIN_NODECORATION) &&
                mouse_y >= child->y && mouse_y < (child->y + 31))
             {
+                // 'Close window' button
                 if(mouse_x >= child->x + child->width - 24 && 
                    mouse_x < child->x + child->width - 8 &&
                    mouse_y >= child->y + 8 &&
@@ -736,6 +771,35 @@ void Window_process_mouse(
                     
                     window_hit = 1;
                 }
+                // 'Maximize window' button
+                else if(mouse_x >= child->x + child->width - 48 && 
+                   mouse_x < child->x + child->width - 32 &&
+                   mouse_y >= child->y + 8 &&
+                   mouse_y < child->y + 24)
+                {
+                    if(child->flags & WIN_MAXIMIZED)
+                    {
+                        Window_unmaximize(child);
+                    }
+                    else
+                    {
+                        Window_maximize(child);
+                    }
+                    
+                    window_hit = 1;
+                }
+                // 'Minimize window' button
+                if(mouse_x >= child->x + child->width - 72 && 
+                   mouse_x < child->x + child->width - 56 &&
+                   mouse_y >= child->y + 8 &&
+                   mouse_y < child->y + 24)
+                {
+                    Window_minimize(child);
+                    
+                    window_hit = 1;
+                }
+                // Anywhere else on the window decoration will
+                // drag the window
                 else if(!(window->flags & WIN_NO_DRAG))
                 {
                     window->dragging = 1;
@@ -816,6 +880,7 @@ void Window_process_mouse(
                 if(!(child->flags & WIN_NODECORATION) &&
                    mouse_y >= child->y && mouse_y < (child->y + 31))
                 {
+                    // 'Close window' button
                     if(mouse_x >= child->x + child->width - 24 && 
                        mouse_x < child->x + child->width - 8 &&
                        mouse_y >= child->y + 8 &&
@@ -823,6 +888,35 @@ void Window_process_mouse(
                     {
                         Window_request_close(child);
                     }
+                    // 'Maximize window' button
+                    else if(mouse_x >= child->x + child->width - 48 && 
+                            mouse_x < child->x + child->width - 32 &&
+                            mouse_y >= child->y + 8 &&
+                            mouse_y < child->y + 24)
+                    {
+                        if(child->flags & WIN_MAXIMIZED)
+                        {
+                            Window_unmaximize(child);
+                        }
+                        else
+                        {
+                            Window_maximize(child);
+                        }
+                        
+                        window_hit = 1;
+                    }
+                    // 'Minimize window' button
+                    if(mouse_x >= child->x + child->width - 72 && 
+                       mouse_x < child->x + child->width - 56 &&
+                       mouse_y >= child->y + 8 &&
+                       mouse_y < child->y + 24)
+                    {
+                        Window_minimize(child);
+                        
+                        window_hit = 1;
+                    }
+                    // Anywhere else on the window decoration will
+                    // drag the window
                     else if(!(window->flags & WIN_NO_DRAG))
                     {
                         window->dragging = 1;
@@ -1466,6 +1560,12 @@ void Window_maximize(Window *window)
         return;
     }
 
+    // If we cannot resize window, we cannot maximize it.
+    if(window->flags & WIN_NO_RESIZE)
+    {
+        return;
+    }
+
     // Store the current window size and position so we can restore it
     // later.
     window->last_x = window->x;
@@ -1484,6 +1584,8 @@ void Window_maximize(Window *window)
 
     Desktop_invalidate_start_bar(window->parent);
     
+    Window_invalidate(window, 0, 0, WIN_TITLEHEIGHT, window->width);
+
     // TODO: Call onWindowMaximized here.
 }
 

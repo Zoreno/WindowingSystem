@@ -51,11 +51,13 @@ TODO List:
 Primary goals:
 
  - Window icon
- - Window Maximize
  - Fix sizing problem. Now you can reduce the size of the window to the point
 that you cannot grab the resize rectangle again. This can be fixed by setting 
 max and min allowable size for windows but each type must have its own size.
  - Separate horizontal and vertical resize.
+ - Draw lines off-axis in the context.
+ - Implement all controls.
+ - Render window framebuffer instead of controls.
 
 Additional flags
  - None at the moment
@@ -65,23 +67,45 @@ Quality of life size/dimension accessors
  - Bounding rect
 
 Window Events
- - Key
+ - Key Up
+ - Key Down
  - Mouse Up
  - Mouse Down
  - Mouse Moved
  - Mouse Scroll
  - Gained focus
  - Lost focus
- - Iconified
+ - Minimized
  - Restored
+ - Maximized
+ - Unmaximized
  - Cursor enter
  - Resized
+ - Moved
+
+Graphic views
+ - Splash screen (Windows is loading type screen)
+ - Login screen
+ - Desktop
+ - Full screen windows
 
 Simple controls
  - Button
  - Checkbox
  - Label
  - Textbox
+ - Alt bar (Menu bar)
+ - Right click menu (context menu)
+ - Scroll bar
+ - Panels and tabs
+ - Canvas
+ - Progress bar
+ - Slider
+
+Dialog Windows
+ - Information box
+ - Message box
+ - Error box
 
 Simple Applications
  - Calculator
@@ -89,7 +113,7 @@ Simple Applications
  - File explorer
  - Control Panel
  - Calendar
- - Text editor
+ - Text editor (note pad)
 
 Secondary goals:
 
@@ -108,9 +132,16 @@ Change appearance as desired.
    - Get advance and height and such from fonts
    - Read proper font files / FreeType library. Would be nice to have arial and
 comic sans.
+   - Font anti-aliasing and edge smoothing
 
+Taskbar
+ - Traybar icons
+   - Sound status
+   - Network status
 Start Menu
  - Launch programs (Open proper window)
+ - Shut down computer
+ - Log out
 
 Create a pipe or socket to communicate to external programs. 
  - Syscall-like syntax is preferred to emulate OS environment.
