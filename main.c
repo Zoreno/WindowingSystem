@@ -56,8 +56,10 @@ that you cannot grab the resize rectangle again. This can be fixed by setting
 max and min allowable size for windows but each type must have its own size.
  - Separate horizontal and vertical resize.
  - Draw lines off-axis in the context.
- - Implement all controls.
+ - Implement all controls and make custom paint and input handlers for them.
  - Render window framebuffer instead of controls.
+ - Fix Minimize and Maximize buttons showing for windows that do not support
+resizing.
 
 Additional flags
  - None at the moment
@@ -116,6 +118,9 @@ Simple Applications
  - Text editor (note pad)
 
 Secondary goals:
+
+Double/Triple buffering of backbuffer
+ - May reduce flickering and visible drawing of buffers to screen.
 
 Change appearance as desired.
  - User profile

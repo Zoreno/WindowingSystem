@@ -1491,6 +1491,11 @@ void Window_remove(Window *window)
 
     List_remove_at(parent->children, window_index);
 
+    if(parent->drag_child == window)
+    {
+        parent->drag_child = (Window *)0;
+    }
+
     Window_invalidate(
         parent, 
         window->y, 

@@ -4,8 +4,8 @@
 # @file
 # @version 0.1
 
-CFLAGS := -pg -Wall -Wextra -Wpedantic
-LDFLAGS := -pg -lSDL2 -lSDL2_image -lpthread
+CFLAGS := -g -Wall -Wextra -Wpedantic
+LDFLAGS := -g -lSDL2 -lSDL2_image -lpthread
 
 all: main list listnode context desktop rect window button textbox
 	gcc *.o $(LDFLAGS) -o sdltest
