@@ -57,9 +57,33 @@ max and min allowable size for windows but each type must have its own size.
  - Separate horizontal and vertical resize.
  - Draw lines off-axis in the context.
  - Implement all controls and make custom paint and input handlers for them.
- - Render window framebuffer instead of controls.
+ - Render window framebuffer instead of controls/Framebuffer as a control
+much like canvas in java. This can be used to render user-defined shapes.
  - Fix Minimize and Maximize buttons showing for windows that do not support
 resizing.
+ - Distinguish mouse buttons.
+ - Scroll Wheel Implementation.
+ - Finish the debug print with all values of the windows struct and override for
+all types of windows to get info like button callback and text and such.
+ - Double click of mouse buttons should be handled. This requires a timer of
+some sort and a setting for the double click time.
+ - Maximize window by double clicking on the title bar.
+ - Window settings as separate struct for specifying window initialization
+parameters.
+ - Unique window handle and accessor functions to get the window. An integer
+will be assigned to each window/control that uniquely specifies the window.
+This way, we can access the window without actually knowing the address of the 
+window in memory. This is needed to access the window from another process.
+ - Fix representation of size and position. Create vector assignment for these
+parameters to ease user who handles the window.
+ - Get rid of the current list and implement the linked list in the window
+directly to increase the performance. The most used function in profiling is
+List_get_at which finds an element in a list. This can be reduced by linking the
+windows directly. Also create first and last child pointers.
+ - Right clicḱ context menu.
+ - Click outside a window to remove active status. 
+ - Desktop Start Bar cleaning. Now the start bar is implemented as a floating
+window, which might be OK. The invalidation of the start bar needs a cleanup.
 
 Additional flags
  - None at the moment
@@ -73,6 +97,7 @@ Window Events
  - Key Down
  - Mouse Up
  - Mouse Down
+ - Mouse Double Click
  - Mouse Moved
  - Mouse Scroll
  - Gained focus
@@ -86,7 +111,7 @@ Window Events
  - Moved
 
 Graphic views
- - Splash screen (Windows is loading type screen)
+ - Splash screen ("Windows is loading" type screen)
  - Login screen
  - Desktop
  - Full screen windows
@@ -103,6 +128,7 @@ Simple controls
  - Canvas
  - Progress bar
  - Slider
+ - Dropdown list
 
 Dialog Windows
  - Information box
@@ -138,6 +164,7 @@ Change appearance as desired.
    - Read proper font files / FreeType library. Would be nice to have arial and
 comic sans.
    - Font anti-aliasing and edge smoothing
+   - Unicode fonts for all that extra chars :D
 
 Taskbar
  - Traybar icons
@@ -154,6 +181,7 @@ Create a pipe or socket to communicate to external programs.
 Native bitmap/PNG support
  - Right now bitmap loading is done by SDL, which is not available in an OS
 environment.
+ - Support multiple bitmap formats both in screen framebuffer and in bitmap rendering.
 
 Basic Control Panel
  - Change Theme
@@ -179,6 +207,13 @@ Basic Control Panel
 Desktop *desktop;
 int quit = 0;
 
+#define KEYBOARD_SHIFT 0x1
+#define KEYBOARD_ALT 0x2
+#define KEYBOARD_CTRL 0x4
+
+#define KEYBOARD_UP 0x1
+#define KEYBOARD_DOWN 0x0
+
 void main_mouse_callback(uint16_t mouse_x, uint16_t mouse_y, uint8_t buttons)
 {
     pthread_mutex_lock(&desktop->mutex);
@@ -188,9 +223,28 @@ void main_mouse_callback(uint16_t mouse_x, uint16_t mouse_y, uint8_t buttons)
 
 void main_keyboard_callback(int key, int mods, int action)
 {
-    pthread_mutex_lock(&desktop->mutex);
-    Window_process_mouse((Window *)desktop, key, mods, action);
-    pthread_mutex_unlock(&desktop->mutex);   
+    int modifiers = 0;
+
+    // Figure out which modifiers were active
+    if(mods & KMOD_RSHIFT || mods & KMOD_LSHIFT)
+    {
+        modifiers |= KEYBOARD_SHIFT;
+    }
+    if(mods & KMOD_RCTRL || mods & KMOD_LCTRL)
+    {
+        modifiers |= KEYBOARD_CTRL;
+    }
+    if(mods & KMOD_LALT || mods & KMOD_RALT)
+    {
+        modifiers |= KEYBOARD_ALT;
+    }
+
+    if(key < 4096)
+    {
+        pthread_mutex_lock(&desktop->mutex);
+        Window_process_keyboard((Window *)desktop, key, modifiers, action);
+        pthread_mutex_unlock(&desktop->mutex);   
+    }
 }
 
 void tick_thread_func()
@@ -339,30 +393,63 @@ int main(int argc, char **argv)
                     switch(event.key.keysym.sym)
                     {
                         case SDLK_e:
+                            if(!(event.key.keysym.mod & KMOD_LCTRL))
+                            {
+                                break;
+                            }
+                            
                             if(desktop_window->active_child)
                             {
                                 Window_minimize(desktop_window->active_child);
                             }
                             break;
                         case SDLK_r:
+                            if(!(event.key.keysym.mod & KMOD_LCTRL))
+                            {
+                                break;
+                            }
+                            
                             if(desktop_window->active_child)
                             {
                                 Window_restore(desktop_window->active_child);
                             }
                             break;
                         case SDLK_f:
+                            if(!(event.key.keysym.mod & KMOD_LCTRL))
+                            {
+                                break;
+                            }
+                            
                             if(desktop_window->active_child)
                             {
                                 Window_maximize(desktop_window->active_child);
                             }
                             break;
                         case SDLK_g:
+                            if(!(event.key.keysym.mod & KMOD_LCTRL))
+                            {
+                                break;
+                            }
+                            
                             if(desktop_window->active_child)
                             {
                                 Window_unmaximize(desktop_window->active_child);
                             }
                             break;
+                        case SDLK_j:
+                            if(!(event.key.keysym.mod & KMOD_LCTRL))
+                            {
+                                break;
+                            }
+                            
+                            Window_debug_print((Window *) desktop, 0);
+                            break;
                         case SDLK_n:
+                            if(!(event.key.keysym.mod & KMOD_LCTRL))
+                            {
+                                break;
+                            }
+                            
                             // TODO: Create DONT_CARE variables and move cascade
                             // logic into the Window_create_window.
                             Desktop_create_window(
@@ -383,6 +470,11 @@ int main(int argc, char **argv)
                             
                             break;
                         case SDLK_k:
+                            if(!(event.key.keysym.mod & KMOD_LCTRL))
+                            {
+                                break;
+                            }
+                            
                             {
                                 Window *desktop_window = (Window *)desktop;
                                 
@@ -397,17 +489,15 @@ int main(int argc, char **argv)
                     main_keyboard_callback(
                         event.key.keysym.sym,
                         event.key.keysym.mod,
-                        0);
-                    
+                        1);
                     break;
                     
                 case SDL_KEYUP:
-                    
                     main_keyboard_callback(
                         event.key.keysym.sym,
                         event.key.keysym.mod,
                         0);
-                    
+                   
                 case SDL_MOUSEBUTTONUP:
                     if(event.button.button == SDL_BUTTON_LEFT)    
                         buttonState &= ~(1<<0);

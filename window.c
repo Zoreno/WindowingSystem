@@ -996,7 +996,8 @@ void Window_process_keyboard(
     {
         Window_process_keyboard(window->active_child, key, mods, action);
     }
-    else if(window->key_function)
+    
+    if(window->key_function)
     {
         window->key_function(window, key, mods, action);
     }
@@ -1027,6 +1028,11 @@ void Window_mousedown_handler(Window *window, int x, int y)
 
 void Window_key_handler(Window *window, int key, int mods, int action)
 {
+    if(window->title)
+    {
+        //printf("Window (%s) got keypress(%d:%#x:%d)\n", window->title, key, mods, action);
+    }
+    
     return;
 }
 
@@ -1612,6 +1618,92 @@ void Window_unmaximize(Window *window)
 
     Window_move(window, window->last_x, window->last_y);
     Window_resize(window, window->last_width, window->last_height);
+}
+
+void Window_debug_print(Window *window, int print_depth)
+{
+    char *flag_string;
+    char *ws;
+    int i;
+    int j;
+    Window *child;
+
+    ws = malloc(sizeof(char) * (print_depth + 1));
+
+    for(i = 0; i < print_depth; ++i)
+    {
+        *(ws + i) = ' ';
+    }
+
+    ws[i] = '\0'; 
+
+    flag_string = malloc(sizeof(char) * 100);
+
+    if(print_depth == 0)
+    {
+        printf("Dumping window information...\n\n");
+    }
+
+    sprintf(flag_string, "%s%s%s%s%s%s%s",
+    window->flags & WIN_NODECORATION ? "nodeco " : "",
+    window->flags & WIN_MINIMIZED ? "minimized " : "",
+    window->flags & WIN_SHOULD_CLOSE ? "close " : "",
+    window->flags & WIN_NO_DRAG ? "nodrag " : "",
+    window->flags & WIN_NO_RESIZE ? "noresize " : "",
+    window->flags & WIN_FLOATING ? "floating " : "",
+    window->flags & WIN_MAXIMIZED ? "maximized " : "");
+    
+    printf("%sWindow title %s\n", 
+           ws, window->title ? window->title : "");
+    printf("%sWindow Parent Address: %#p\n", 
+           ws, window->parent ? window->parent : "NULL");
+    printf("%sWindow Position (%d, %d)\n", 
+           ws, window->x, window->y);
+    printf("%sWindow Dimension (%d, %d)\n", 
+           ws, window->width, window->height);
+    printf("%sWindow Inner Dimension (%d, %d)\n", 
+           ws, window->inner_width, window->inner_height);
+    printf("%sWindow Flags: %s\n", 
+           ws, flag_string);
+    printf("%sWindow Context Address: %#p\n", 
+           ws, window->context);
+    printf("%sWindow Last Position (%d, %d)\n", 
+           ws, window->last_x, window->last_y);
+    printf("%sWindow Last Dimension (%d, %d)\n", 
+           ws, window->last_width, window->last_height);
+    printf("%sNumber of children: %d\n", 
+           ws, window->children->count);
+    printf("%sWindow Drag Child Address: %#p\n", 
+           ws, window->drag_child ? window->drag_child : "NULL");
+    printf("%sWindow Active Child Address: %#p\n", 
+           ws, window->active_child ? window->active_child : "NULL");
+    printf("%sDragging: %d\n",
+           ws, window->dragging);
+    printf("%sResizing: %d\n",
+           ws, window->resizing);
+    printf("%sWindow Drag Offset (%d, %d)\n",
+           ws, window->drag_off_x, window->drag_off_y);
+
+    // TODO: Print handler addresses and such
+    // TODO: Print min/max width/height
+    // TODO: Override for different types of windows
+
+    for(j = 0; j < window->children->count; ++j)
+    {
+        child = (Window *)List_get_at(window->children, j);
+        
+        printf("%sChild %d:\n", ws, j);
+        
+        Window_debug_print(child, print_depth + 4);
+    }
+
+    if(print_depth == 0)
+    {
+        printf("\nWindow Dump Done\n");
+    }
+    
+    free(ws);
+    free(flag_string);
 }
 
 /* window.c ends here */

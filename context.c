@@ -179,7 +179,7 @@ void Context_clipped_bitmap(
 
     if(dest_x < clip_area->left)
     {
-        source_x += clip_area->left - dest_x;
+        source_x += clip_area->left - dest_x; // Don't forget to update source aswell :)
         dest_x = clip_area->left;
     }
 
@@ -215,6 +215,8 @@ void Context_clipped_bitmap(
 }
 
 // TODO: Implement scaling with different source and dest width/height
+// TODO: Implement different texture formats for the bitmaps source and
+// dest bitmaps
 void Context_fill_bitmap(
     Context *context,
     int source_x, 
